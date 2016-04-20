@@ -6,6 +6,6 @@ public class TestStudent {
 
 	@Test
 	public void testStudent(){
-		
+		String str = "str";
 	}
 }
