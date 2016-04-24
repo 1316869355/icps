@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="style/login.css">
+    <title>用户登录</title>
+</head>
+<body>
+   <div class="main">
+   <h1>用户登录</h1>
+    <form id="fo" action="" onsubmit="return checkCard()">
+        <label for="idNumber">
+        身份证号:<input name='card_no' type='text' id='card_no' placeholder="请输入身份证登录">  
+        </label>
+        <span></span><br>
+        <label for="role">
+            <input type="radio" id="techer" name="role" required >教师
+            <input type="radio" id="student" name="role" required>学生
+        </label><br>
+        <input type="submit" name="login" value="登录">
+    </form>
+    </div>
+    <script src="js/login.min.js"></script>
+</body>
+</html>
