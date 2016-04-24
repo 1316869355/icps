@@ -1,0 +1,60 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body
+{
+    background-color: #F2F2F2;
+}
+.main
+{
+    width: 800px;
+    margin: 200px auto;
+    text-align: center;
+    background-color: #FFF;
+    border-radius: 10px;
+    box-shadow: 5px 5px 5px #ccc;
+}
+form
+{
+    margin-top: 30px;
+}
+input[type="text"]
+{
+    height: 30px;
+    border-radius: 5px;
+    outline:1px #FFF solid;
+    margin-bottom: 15px;
+   transition: outline 1s,box-shadow 1s;
+}
+input[type="text"]:focus
+{
+ outline: 1px #1C86EE solid; 
+    box-shadow:2px 2px 2px #CCCCCC;
+}
+input[type="submit"]
+{
+    margin-top: 30px;
+    height: 30px;
+    width: 60px;
+    border-radius: 5px;
+    background-color: #F4F4F4;
+    transition:background-color  0.5s;
+    margin-bottom: 15px;
+}
+label input[type="radio"]
+{
+    margin: 0 10px;
+}
+input[type="submit"]:hover
+{
+    background-color: #E3E3E3;
+}
+input[type="submit"]:focus
+{
+    outline: none;
+}
+span
+{
+    color: red;
+}
