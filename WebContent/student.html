@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>新生个人信息调查问卷</title>
+    <link rel="stylesheet" href="style/student.css">
+</head>
+<body>
+    <div class="main">
+       <h1>新生个人信息调查问卷</h1>
+        <form action="#">
+            <label for="name">
+                姓名:<input class="control" type="text" name="name" required>
+            </label>
+            <label for="sex">
+              性别:<select  class="control" name="sex">
+                  <option value="man">男</option>
+                  <option value="woman">女</option>
+              </select>
+            </label><br>
+            <label for="region">
+                生源地区:<select  class="control" name="region">
+                    <option value="east">华东地区</option>
+                    <option value="south">华南地区</option>
+                    <option value="center">华中地区</option>
+                    <option value="north">华北地区</option>
+                    <option value="northwest">西北地区</option>
+                </select>
+            </label>
+            <label for="relax">
+                偏好的放松方式: <select  class="control" name="relax">
+                    <option value="motion">运动</option>
+                    <option value="game">游戏</option>
+                    <option value="music">音乐</option>
+                    <option value="other">其他</option>
+                </select>
+            </label><br>
+            <label for="blood">
+                血型:<select name="blood" class="control">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="O">O</option>
+                    <option value="AB">AB</option>
+                </select>
+            </label>
+            <label for="constellation" class="control">
+              星座:
+               <select name="constellation">
+                <option value="baiyang">白羊座</option>
+                <option value="jinniu">金牛座</option>
+                <option value="shuangzi">双子座</option>
+                <option value="juxie">巨蟹座</option>
+                <option value="shizi">狮子座</option>
+                <option value="chunv">处女座</option>
+                <option value="tiancheng">天秤座</option>
+                <option value="tianxie">天蝎座</option>
+                <option value="sheshou">射手座</option>
+                <option value="mojie">摩羯座</option>
+                <option value="shuiping">水瓶座</option>
+                <option value="shuangyu">双鱼座</option>
+                </select>
+            </label><br>
+            <input type="submit" value="提交">
+        </form>
+    </div>
+</body>
+</html>
