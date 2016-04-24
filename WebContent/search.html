@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <title>教师搜索</title>
+    <link rel="stylesheet" href="style/search.css">
+    <style>
+        .main{
+            
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="main">
+       <h1>学生档案搜索</h1>
+        姓名:<input type="text" name="name" placeholder="请输入学生姓名">
+        院系:<input type="text" name="yuanxi">
+        专业:<input type="text" name="zhuanye">
+        性别: <select name="sex">
+            < value="man">男</option>
+            <option value="woman">女</option>
+        </select>
+        <input type="submit" value="搜索">
+    </div>
+<!--    //搜索结果内容-->
+    <div>
+<!--       标题-->
+        <nav>
+            <li id="sno"></li>
+            <li id="sname"></li>
+            <li id="sex"></li>
+            <li id="sdept"></li>
+            <li id="major"></li>
+        </nav>
+        <div>
+<!--            显示区-->
+        
+        </div>
+    </div>
+    
+</body>
+</html>
