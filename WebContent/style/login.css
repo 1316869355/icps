@@ -18,6 +18,7 @@ body
 form
 {
     margin-top: 30px;
+    padding-bottom: 10px;
 }
 input[type="text"]
 {
@@ -54,7 +55,17 @@ input[type="submit"]:focus
 {
     outline: none;
 }
-span
+span.tip
 {
+	height: 30px;
+    line-height: 30px;
     color: red;
+    font-size: 14px;
+
+}
+#login
+{
+	width: 80px;
+	height: 30px;
+	line-height:30px;
 }

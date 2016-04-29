@@ -1,26 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
     <link rel="stylesheet" href="style/login.css">
     <title>用户登录</title>
 </head>
+
 <body>
-   <div class="main">
-   <h1>用户登录</h1>
-    <form id="fo" action="" onsubmit="return checkCard()">
-        <label for="idNumber">
-        身份证号:<input name='card_no' type='text' id='card_no' placeholder="请输入身份证登录">  
-        </label>
-        <span></span><br>
-        <label for="role">
-            <input type="radio" id="techer" name="role" required >教师
-            <input type="radio" id="student" name="role" required>学生
-        </label><br>
-        <input type="submit" name="login" value="登录">
-    </form>
+    <div class="main">
+        <h1>用户登录</h1>
+        <form action="login" id="form1" method="get">
+        <div>
+                <label for="card_no">
+                    	身份证号:
+                </label>
+                <input name='cardNo' type='text' id='card_no' placeholder="请输入身份证登录" required>
+                <br/>
+                <label for="user_name">
+                    &nbsp;用户名:
+                </label>
+                <input name='userName' type='text' id='user_name' placeholder="请输入用户名" required>
+                <br/>
+                <label for="role">
+                    <input type="radio" id="techer" name="role" value="1" required>教师
+                    <input type="radio" id="student" name="role" value="2" required>学生
+                </label>
+                <br/>
+            	<span class="tip"></span>
+            	<br/>
+            <button id="login" onclick="checkCard()">登陆</button>
+          </div>
+          </form>
     </div>
-    <script src="js/login.min.js"></script>
+    <script src="js/jquery-1.12.3.min.js"></script>
+    <script src="js/login.js"></script>
 </body>
+
 </html>

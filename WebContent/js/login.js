@@ -1,8 +1,8 @@
 var techer=document.getElementById("techer");
 var student=document.getElementById("student");
-var login=document.getElementsByName("login")[0];
-var fo=document.getElementById("fo");
-var card=fo.getElementsByTagName("input")[0].value;
+var login=$("#login");
+var form = document.getElementById("form1");
+var card=document.getElementById("card_no").value;
 var sp=document.getElementsByTagName("span")[0];
 var vcity={ 11:"北京",12:"天津",13:"河北",14:"山西",15:"内蒙古",  
             21:"辽宁",22:"吉林",23:"黑龙江",31:"上海",32:"江苏",  
@@ -11,55 +11,67 @@ var vcity={ 11:"北京",12:"天津",13:"河北",14:"山西",15:"内蒙古",
             51:"四川",52:"贵州",53:"云南",54:"西藏",61:"陕西",62:"甘肃",  
             63:"青海",64:"宁夏",65:"新疆",71:"台湾",81:"香港",82:"澳门",91:"国外"  
            };  
-login.onclick=function()
-{
-    if(techer.checked)
-        {
-          fo.action="search.html";
-        }
-    else if(student.checked)
-        {
-           fo.action="student.html";
-        }
-   return checkCard();
-    if(!techer.checked==true&&!student.checked==true)
-        {
-            return false;
-        }
-  }  
- function checkCard()  
+
+ function checkCard()
 {  
     var card = document.getElementById('card_no').value;  
     //是否为空  
     if(card === '')  
     {   
-        sp.innerHTML="请输入身份证号，身份证号不能为空"
+        sp.innerHTML="请输入身份证号"
         return false;  
-    }  
+    }
     //校验长度，类型  
-    if(isCardNo(card) === false)  
+/*    if(isCardNo(card) === false)  
     {   
-         sp.innerHTML="您输入的身份证号码不正确，请重新输入"
+         sp.innerHTML="身份证号有误，请重新输入"
         return false;  
-    }  
+    }  */
     //检查省份  
-    if(checkProvince(card) === false)  
+/*    if(checkProvince(card) === false)  
     {  
-         sp.innerHTML="您输入的身份证号码不正确,请重新输入";
+         sp.innerHTML="身份证号有误,请重新输入";
         return false;  
-    }  
+    }  */
     //校验生日  
-    if(checkBirthday(card) === false)  
+/*    if(checkBirthday(card) === false)  
     {  
-        sp.innerHTML="您输入的身份证号码生日不正确,请重新输入";
+        sp.innerHTML="身份证号生日不正确,请重新输入";
         return false;  
-    }  
+    }  */
     //检验位的检测  
-    if(checkParity(card) === false)  
+/*    if(checkParity(card) === false)  
     {  
-        sp.innerHTML="您的身份证校验位不正确,请重新输入";
+        sp.innerHTML="身份证号校验位不正确,请重新输入";
         return false;  
-    }  
+    }*/
+    sp.innerHTML="";
+    // 检查 是否选择单选按钮
+    var check = $(":radio[name='role']:checked").val();
+    if(check && check=='2' || check =='1'){
+    	
+    	form.submit();
+    }
+   /* paramData = {
+            "cardNo":$("#card_no").val()
+           ,"userName":$("#user_name").val()
+   };*/
+   $.ajax({
+		   type: 	"GET",
+		   url:		"login",
+		   data:	paramData,
+		   success: function (data, statue){
+			//由于接收到的是字符串，所以要先转化为 json数据
+			//配置response.setContentType("application/json");后，
+			//servlet 返回的数据是json数据
+		   //	var str = eval(data);将字符串转换为json对象
+		   },
+		   error: function(xhr, statue, err){
+			   sp.innerHTML="";
+			   console.info('xhr: ' + xhr +" statue: "+ statue +" err: "+err);
+		   }
+   });
+   
     return true;  
 };  
 //检查号码是否符合规范，包括长度，类型  
@@ -172,4 +184,4 @@ changeFivteenToEighteen = function(card)
         return card;  
     }  
     return card;  
-}; 	
+};
