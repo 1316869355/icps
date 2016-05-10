@@ -48,30 +48,39 @@ var vcity={ 11:"北京",12:"天津",13:"河北",14:"山西",15:"内蒙古",
     sp.innerHTML="";
     // 检查 是否选择单选按钮
     var check = $(":radio[name='role']:checked").val();
+     paramData = {
+	    "cardNo":$("#card_no").val()
+	   ,"userName":$("#user_name").val()
+	   ,"role": check
+	};
+     console.info(paramData);
     if(check && check=='2' || check =='1'){
-    	
-    	form.submit();
+	    	$.ajax({
+	    		url: "/icps/login",
+	  		   type: 	"POST",
+	  		   data:	paramData,
+	  		   success: function (data, statue){
+	  			//由于接收到的是字符串，所以要先转化为 json数据
+	  			//配置response.setContentType("application/json");后，
+	  			//servlet 返回的数据是json数据
+	  		   //	var str = eval(data);将字符串转换为json对象
+	  			   sessionStorage.setItem("username", $("#card_no").val());
+	  			   if(check =='1'){
+	  				 setTimeout( function(){
+	  					 	window.location.href="search.html";
+	  				 	}, 500);
+	  			   }else if(check =='2'){
+	  				   setTimeout(function(){
+	  					   window.location.href="student.html";
+	  				   },500);
+	  			   }
+	  		   },
+	  		   error: function(xhr, statue, err){
+	  			   var info = xhr.responseJSON[0].info;
+	  			   sp.innerHTML=info;
+	  		   }
+	     });
     }
-   /* paramData = {
-            "cardNo":$("#card_no").val()
-           ,"userName":$("#user_name").val()
-   };*/
-   $.ajax({
-		   type: 	"GET",
-		   url:		"login",
-		   data:	paramData,
-		   success: function (data, statue){
-			//由于接收到的是字符串，所以要先转化为 json数据
-			//配置response.setContentType("application/json");后，
-			//servlet 返回的数据是json数据
-		   //	var str = eval(data);将字符串转换为json对象
-		   },
-		   error: function(xhr, statue, err){
-			   sp.innerHTML="";
-			   console.info('xhr: ' + xhr +" statue: "+ statue +" err: "+err);
-		   }
-   });
-   
     return true;  
 };  
 //检查号码是否符合规范，包括长度，类型  

@@ -16,6 +16,7 @@ import net.sf.json.JSONArray;
 
 import com.icps.dao.StudentDao;
 import com.icps.dao.TeacherDao;
+import com.icps.util.Evalued;
 import com.icps.util.SystemCodeEnum;
 
 /**
@@ -27,12 +28,12 @@ public class uploadInfoServlet extends HttpServlet {
 
 	private StudentDao stuDao = null;
 	private TeacherDao teaDao = null;
-	
+	private Map<String, Object> result = new  HashMap<String, Object>();
+
 	public uploadInfoServlet(StudentDao suDao, TeacherDao teaDao){
 		this.stuDao = suDao;
 		this.teaDao = teaDao;
 	}
-	private Map<String, Object> result = new  HashMap<String, Object>();
 	/**
      * Default constructor. 
      */
@@ -74,15 +75,10 @@ public class uploadInfoServlet extends HttpServlet {
 		String blood = request.getParameter("blood");//血型
 		String relax = request.getParameter("relax");//放松方式
 		String start = request.getParameter("start");//星座
-		
-		System.out.println("name " + name + "\tsex"+ sex + "\tregion"+ SystemCodeEnum.getName(region)+
-							"\t blood"+ SystemCodeEnum.getName(blood)+
-							"\t relax"+ SystemCodeEnum.getName(relax)+
-							"\t start"+ SystemCodeEnum.getName(start));
+		String evalued = Evalued.exeute(relax, blood, start);
 		try {
-			
-			sql = "update icps_stu set sname=?, ssex=?, region=?,sblood=?, shbt=?, start_sign=? where stu_card_no=?";
-			stuDao.updateStuInfo(sql, name, sex, region, blood, relax, start, cardno);
+			sql = "update icps_stu set sname=?, ssex=?, region=?,sblood=?, shbt=?, start_sign=?,evalued_type=? where stu_card_no=?";
+			stuDao.updateStuInfo(sql, name, sex, region, blood, relax, start, evalued, cardno);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

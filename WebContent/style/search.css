@@ -21,3 +21,15 @@ h1
 {
     margin-bottom: 15px;
 }
+.title, .content{
+	width:80%;
+	margin: 0 auto;
+}
+.content table {
+	width:100%;
+	margin: 0 auto;
+}
+
+tbody tr:hover{
+	background-color: #4f4;
+}

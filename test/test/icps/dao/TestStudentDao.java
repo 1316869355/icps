@@ -18,7 +18,7 @@ public class TestStudentDao {
 		stdao.isExits("", "");
 	}
 	@Test
-	public void testLogin(){
+	public void testLogin() throws Exception{
 		stdao.findStu("123", "测试");
 	}
 	@Test
@@ -29,9 +29,8 @@ public class TestStudentDao {
 	@Test
 	public void findStuList() throws Exception{
 		String sql = "select * from icps_stu";
-		List<Student> stuList = stdao.findStuListObj(sql);
+		List<Map<String, Object>> stuList = stdao.findStuListObj(sql);
 		
-		System.out.println(stuList.get(0).getSname());
 	}
 	
 	@Test
@@ -43,16 +42,13 @@ public class TestStudentDao {
 		sbf.append(" from icps_stu stu, icps_code ic1, icps_code ic2 ");
 		sbf.append(" where stu.stu_dept = ic1.code and stu.stu_major = ic2.code");
 		
-		List<Map<String, Object>> stuList = stdao.findStuListMap(sbf.toString(), null);
+		List<Student> stuList = stdao.findStuListMap(sbf.toString(), null);
 		Set sk = null;
 //		value 
-		for (Map<String, Object> map : stuList) {
-			sk = map.keySet();
-			for (Iterator iterator = sk.iterator(); iterator.hasNext();) {
-					Object object = (Object) iterator.next();
-				System.out.print("\t"+(String)object +":="+ map.get(object));
-			}
-		}
 		
+	}
+	@Test
+	public void delStu(){
+		stdao.deleteStu("delete from icps_stu where sno=?", "123");
 	}
 }

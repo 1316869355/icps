@@ -30,9 +30,6 @@ public class searchServlet extends HttpServlet {
 	private TeacherDao teaDao = null;
 
 	private Map<String, Object> result = new  HashMap<String, Object>();
-    public searchServlet() {
-        super();
-    }
     public void init() throws ServletException {
     	// TODO Auto-generated method stub
     	super.init();
@@ -60,48 +57,43 @@ public class searchServlet extends HttpServlet {
 		String dept = req.getParameter("dept");
 		String major = req.getParameter("major");
 		String sex = req.getParameter("sex");
+		
+		//分页取 第几也
+		String npage = req.getParameter("curpage");
 		//检测是否为教师
-		if(null == cno || "".equals(cno)){
+/*		if(null == cno || "".equals(cno)){
 			result.put("res", "error");
 			result.put("info", "登陆超时");
 			array.add(result);//将数据转换为json数据
 			resp.setStatus(401);
 			pw.write(array.toString());
 			return;
-		} else {
+		} else {*/
+		System.out.println(cno);
 			try {
 				if(teaDao.isExits("select count(*) from icps_tecr where tno=?", cno)){
-					sql.append("select sno,sname,ssex sex,s1.code_name dept,s2.code_name major  from icps_stu ");
-					sql.append(",icps_sys_code s1,icps_sys_code s2 where icps_stu.stu_dept = s1.code and ");
-					sql.append(" stu_major = s2.code");
+				
+					sql.append(" SELECT	sno,sname,ssex,sage,clazz,hbt blood,star,dept,major,code_name evalued ");
+					sql.append(" FROM ( SELECT sno,sname,ssex,sage,stu_clazz clazz,shbt hbt,sblood blood,start_sign star,evalued_type evalued,c.code_name dept, cd.code_name major ");
+					sql.append(" FROM icps_stu s,icps_sys_code c,icps_sys_code cd ");
+					sql.append(" WHERE s.stu_dept = c.code AND s.stu_major = cd.code");
 					if(null != name && !"".equals(name)){
 						sql.append(" sname='%"+name+"%' ");
 					}
 					if(null != dept && !"".equals(dept)&& !"0".equals(dept)){
-						if(sql.indexOf("where") > 0)
-							sql.append("and dept='"+dept+"'");
-						else{
-							sql.append("where dept='"+dept+"'");
-						}
+						sql.append(" and stu_dept='"+dept+"'");
 					}
 					if(null != major && !"".equals(major)&& !"0".equals(major)){
-							if(sql.indexOf("where") > 0){
-								sql.append("and major='"+major+"'");
-							}else{
-								sql.append("where major='"+major+"'");
-							}
+						sql.append(" and stu_major='"+major+"'");
 					}
 					if(null != sex){
 						if(0!=Integer.parseInt(sex)){
-							if(sql.indexOf("where") > 0){
-								sql.append("and sex="+Integer.parseInt(sex));
-							}else{
-								sql.append("where sex="+Integer.parseInt(sex));
-							}
+						    sql.append(" and sex="+Integer.parseInt(sex));
 						}
 					}
+					sql.append(") a LEFT JOIN icps_sys_code co ON a.evalued = co.code");
 					System.out.println(sql.toString());
-					stu = stuDao.findStuListObj(sql.toString());
+					stu = stuDao.pageList(sql.toString(), Integer.parseInt(npage), 20);
 					
 					result.put("res", "success");
 					result.put("info", stu);
@@ -121,7 +113,6 @@ public class searchServlet extends HttpServlet {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
 		
 	}
 

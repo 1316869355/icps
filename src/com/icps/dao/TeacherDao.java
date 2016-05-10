@@ -17,10 +17,10 @@ public class TeacherDao {
 	public TeacherDao(){
 	}
 	//监测用户是否存在
-	public boolean isExits(String sql, String ... str) throws Exception{
+	public boolean isExits(String sql, Object ... str) throws Exception{
 		// sql = "select * from icps_code where code =?";
 		if (sql != null && sql != "") {
-			int count = jt.queryForObject(sql, Integer.class);
+			int count = jt.queryForObject(sql, str, Integer.class);
 			if (count > 0) {
 				return true;
 			} else {
@@ -38,13 +38,11 @@ public class TeacherDao {
 		
 		if (sql != null && sql != "") {
 //			int count = jt.queryForObject(sql, Integer.class);
-			count = jt.queryForObject(sql,new Object[]{tno, tname}, Integer.class);
+			System.out.println(sql);
+			count = jt.queryForObject(sql, new Object[]{tno, tname}, Integer.class);
 			
 			if (count == 1) {//查寻到一条数据，证明存在该登录用户，返回 true
 				return true;
-			} else if(count > 1) {		//查寻到不止一条数据，证明用户不存在，或查询出错，返回 true
-				
-				return false;
 			} else {
 				return false;
 			}
@@ -61,13 +59,13 @@ public class TeacherDao {
 		tea = jt.queryForObject(sql, new Object[] {id},new Teacher());
 		return tea;
 	}
-	public List<Map<String, Object>> findStuListMap(String sql, String ... str) throws Exception{
+	public List<Map<String, Object>> findTeaListMap(String sql, String ... str) throws Exception{
 		List<Map<String, Object>> teaList = new ArrayList<Map<String, Object>>();
 		teaList = jt.queryForList(sql, str);
 		return teaList;
 	}
 	//获取学生列表信息
-	public List<Teacher> findStuListObj(String sql, String ... str){
+	public List<Teacher> findTeaListObj(String sql, String ... str){
 		List<Teacher> teaList = new ArrayList<>();
 		
 		teaList = jt.query(sql,new Teacher());
@@ -75,9 +73,8 @@ public class TeacherDao {
 		return teaList;
 	}
 	//修改学生信息
-	public void updateStuInfo(String sql, final Object ... str) throws Exception{
+	public void updateTeaInfo(String sql, final Object ... str) throws Exception{
 		
-//		jt.update(sql,str);
 		if(null != str && str.length > 0) {
 			throw new Exception("sql 参数 不能为空");
 		}
@@ -93,7 +90,11 @@ public class TeacherDao {
 		});
 	}
 	//删除学生信息
-	public void deleteStu(String sql, String ...str){
-		
+	public void deleteTea(String sql, Object ...str){
+		try{
+			jt.update(sql,str);
+		}catch(Exception e){
+			System.err.println("delete error");
+		}
 	}
 }

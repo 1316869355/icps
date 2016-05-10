@@ -2,31 +2,21 @@ package com.icps.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.icps.bean.Teacher;
-import com.icps.dao.StudentDao;
-import com.icps.dao.TeacherDao;
-import com.sun.media.sound.RealTimeSequencerProvider;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
-/**
- * Servlet implementation class BaseServlet
- */
+import com.icps.dao.StudentDao;
+import com.icps.dao.TeacherDao;
+
 @WebServlet("/login")
 public class loginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -34,44 +24,26 @@ public class loginServlet extends HttpServlet {
 	private StudentDao stuDao = null;
 	private TeacherDao teaDao = null;
 	
-	public loginServlet(StudentDao suDao, TeacherDao teaDao){
-		this.stuDao = suDao;
-		this.teaDao = teaDao;
-	}
 	private Map<String, Object> result = new  HashMap<String, Object>();
-	protected JSONArray array = new JSONArray();
-	/**
-     * Default constructor. 
-     */
     public loginServlet() {
-        // TODO Auto-generated constructor stub
+    	
     }
 
     @Override
     public void init() throws ServletException {
-    	// TODO Auto-generated method stub
     	super.init();
     	stuDao = new StudentDao();
     	teaDao = new TeacherDao();
     }
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-
 			doPost(request, response);
 	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.setCharacterEncoding("utf-8");
 		response.setContentType("application/json");
-		PrintWriter writer=  response.getWriter();
+		response.setCharacterEncoding("utf-8");
+		HttpSession session = request.getSession();
+		JSONArray array = new JSONArray();
+		PrintWriter pw=  response.getWriter();
 		
 		String cardNo = request.getParameter("cardNo");//身份证号
 		String userName = request.getParameter("userName");//用户名
@@ -80,14 +52,22 @@ public class loginServlet extends HttpServlet {
 		System.out.println("cardNo " + cardNo + "\tusername"+userName + "\trole"+ role);
 		if(null==role||role.equals("")){
 			System.out.print("role == null");
+			response.addHeader("location", "login.html");
+			response.setStatus(302);
 			return;
 		}
 		try {
-			if("1".equals(role)){//教师
+			if("2".equals(role)){//教师
 				//登录
 				if( stuDao.findStu(cardNo, userName) ){ //登录成功
-					response.setStatus(302);
-					response.addHeader("location", "student.html");//跳转到查询页面
+					
+					session.setAttribute("cardno", cardNo);//保存用户身份证
+					response.setStatus(200);
+					
+					result.put("res", "success");
+					array.add(result);//将数据转换为json数据
+					pw.write(array.toString());
+					return;
 				}else{
 					System.err.println("登录出错");
 					response.setStatus(401);//设置头信息
@@ -95,26 +75,29 @@ public class loginServlet extends HttpServlet {
 					result.put("res", "error");
 					result.put("info", "登录名或密码错误");
 					array.add(result);//将数据转换为json数据
-					writer.write(array.toString());
-					
+					pw.write(array.toString());
 					return;
 				}
 			}
-				
-			if("2".equals(role)){//学生
+			if("1".equals(role)){//教师
 				//登录
 				if( teaDao.login(cardNo, userName) ){ //登录成功
-					response.setStatus(302);
-					response.addHeader("location", "search.html");//跳转到查询页面
+					session.setAttribute("cardno", cardNo);//保存用户身份证
+					
+					//System.out.println("登录成功");
+					response.setStatus(200);
+					result.put("res", "success");
+					array.add(result);//将数据转换为json数据
+					pw.write(array.toString());
+					return;
 				}else{
 					System.err.println("登录出错");
 					response.setStatus(401);//设置头信息
 					
 					result.put("res", "error");
-					result.put("info", "登录名或密码错误");
+					result.put("info", "登录超时，请重新登录");
 					array.add(result);//将数据转换为json数据
-					writer.write(array.toString());
-					
+					pw.write(array.toString());
 					return;
 				}
 			}
@@ -122,14 +105,7 @@ public class loginServlet extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		response.setStatus(302);
-		//初始化JSONArray对象，并添加数据
-//		JSONArray array = new JSONArray();
-//		array.add();
-		//writer.write("");
-		//response.sendRedirect("login.html");
-		//response.addHeader("location", "search.html");
-		//response.setStatus(302);
+//		response.setStatus(404);
 	}
 	
 	

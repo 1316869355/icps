@@ -10,7 +10,7 @@ public class MyDataSource {
 	private String DriverClass = "com.mysql.jdbc.Driver";
 	private static String URL = "jdbc:mysql://localhost:3306/icpsdb";
 	private static String USERNAME = "root";
-	private static String PASSWORD = "123456";
+	private static String PASSWORD = "abc123";
 	
 	protected static DriverManagerDataSource dateSource = new DriverManagerDataSource(URL, USERNAME, PASSWORD);
 }

@@ -16,16 +16,31 @@ body
     border-radius: 10px;
     box-shadow: 5px 5px 5px #ccc;
 }
+.form{
+	text-align: left;
+    padding-left: 40%;
+	}
 h1
 {
     margin-bottom: 30px;
 }
+label{
+	font-size:16px;
+	color:rgb(130, 137, 144);
+}
 .control
 {
-    margin-top: 15px;
     margin-bottom: 15px;
+    height: 28px;
+    font-size: 14px;
 }
-input[type="submit"]
+input.control{
+	width:200px;
+}
+select.control{
+	width:100px;
+}
+button
 {
   
     height: 30px;
@@ -35,7 +50,21 @@ input[type="submit"]
     transition:background-color  0.5s;
     margin-bottom: 15px;
 }
-input[type="submit"]:hover
+button:hover
 {
-    background-color: #E3E3E3;
+    background-color: #e00;
+    color:#fff;
+}
+.logout{
+	display:inline-block;
+	float: right;
+	padding-right:20px;
+}
+.logout a{
+	margin-top:4px;
+	text-decoration: none;
+	color:inherit;
+	padding:0 4px;
+	cursor: pointer;
+	background-color: #ccc;
 }

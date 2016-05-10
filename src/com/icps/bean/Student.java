@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
-
+//db name icps_stu
 public class Student implements RowMapper<Student> , Serializable{
 	private String sno;//学号
 	private String sname;
@@ -21,18 +21,17 @@ public class Student implements RowMapper<Student> , Serializable{
 	private String stuDept;
 	private String stuMajor;
 	private String stuClazz;
-	private String utype;
-	
+	private String region;
 	public Student(){};
 	
 	public Student(String sno, String sname, String stuCardNum, String shbt,String sbloodType, 
 			String sstartSign, String utype){
-		this(sno, sname, 0, 18, stuCardNum, "", shbt, sbloodType, sstartSign, "", "", "","",utype);
+		this(sno, sname, 0, 18, stuCardNum, "", shbt, sbloodType, sstartSign, "", "", "","","");
 	}
 	
 	public Student(String sno, String sname, int ssex, int sage, String stuCardNum, String stuAdderss, String shbt,
 			String sbloodType, String sstartSign, String sevaledType, String stuDept, String stuMajor,
-			String stuClazz,String utype) {
+			String stuClazz, String region) {
 		super();
 		this.sno = sno;
 		this.sname = sname;
@@ -47,6 +46,7 @@ public class Student implements RowMapper<Student> , Serializable{
 		this.stuDept = stuDept;
 		this.stuMajor = stuMajor;
 		this.stuClazz = stuClazz;
+		this.region = region;
 	}
 	/* Getter & Setter */
 	public String getSno() {
@@ -127,18 +127,17 @@ public class Student implements RowMapper<Student> , Serializable{
 	public void setStuClazz(String stuClazz) {
 		this.stuClazz = stuClazz;
 	}
-	public String getUtype() {
-		return utype;
+	public String getRegion(){
+		return this.region;
 	}
-	public void setUtype(String utype) {
-		this.utype = utype;
+	public void setRegion(String region){
+		this.region = region;
 	}
-
 	@Override
 	public Student mapRow(ResultSet rs, int index) throws SQLException {
 		Student student = new Student();
 		
-		student.setStuCardNum(rs.getString("stu_card_num"));
+		student.setStuCardNum(rs.getString("stu_card_no"));
 		student.setSno(rs.getString("sno"));
 		student.setSage(rs.getInt("sage"));
 		student.setSsex(rs.getInt("ssex"));
@@ -148,11 +147,11 @@ public class Student implements RowMapper<Student> , Serializable{
 		student.setStuMajor(rs.getString("stu_major"));
 		student.setStuClazz(rs.getString("stu_clazz"));
 		
-		student.setShbt(rs.getString("s_hbt"));//课余活动
-		student.setSbloodType(rs.getString("s_blood_type"));//血型
-		student.setSstartSign(rs.getString("s_start_sign"));//星座
-		student.setSevaledType(rs.getString("s_evaled_type"));//评分结果
-		
+		student.setShbt(rs.getString("shbt"));//课余活动
+		student.setSbloodType(rs.getString("sblood"));//血型
+		student.setSstartSign(rs.getString("start_sign"));//星座
+		student.setSevaledType(rs.getString("evalued_type"));//评分结果
+		student.setRegion(rs.getString("region"));
 		return student;
 	}
 }

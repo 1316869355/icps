@@ -63,24 +63,24 @@ public class CountStu extends HttpServlet {
 			}
 			if(null != dept && !"".equals(dept)&& !"0".equals(dept)){
 				if(sql.indexOf("where") > 0)
-					sql.append("and dept='"+dept+"'");
+					sql.append(" and dept='"+dept+"' ");
 				else{
-					sql.append("where dept='"+dept+"'");
+					sql.append(" where dept='"+dept+"' ");
 				}
 			}
 			if(null != major && !"".equals(major)&& !"0".equals(major)){
 					if(sql.indexOf("where") > 0){
-						sql.append("and major='"+major+"'");
+						sql.append(" and major='"+major+"' ");
 					}else{
-						sql.append("where major='"+major+"'");
+						sql.append(" where major='"+major+"' ");
 					}
 			}
 			if(null != sex){
 				if(0!=Integer.parseInt(sex)){
-					if(sql.indexOf("where") > 0){
-						sql.append("and sex="+Integer.parseInt(sex));
+					if(sql.indexOf(" where") > 0){
+						sql.append(" and sex="+Integer.parseInt(sex));
 					}else{
-						sql.append("where sex="+Integer.parseInt(sex));
+						sql.append(" where sex="+Integer.parseInt(sex));
 					}
 				}
 			}

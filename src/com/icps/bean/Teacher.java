@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
-
+//db name icps_tecr
 public class Teacher implements RowMapper<Teacher> , Serializable{
 	private String tno;
 	private String tname;

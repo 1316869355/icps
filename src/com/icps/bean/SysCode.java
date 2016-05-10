@@ -1,6 +1,12 @@
 package com.icps.bean;
 
-public class SysCode {
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.jdbc.core.RowMapper;
+
+public class SysCode implements RowMapper<SysCode>, Serializable{
 	private String code;
 	private String codeName;
 	private String codeDese;
@@ -62,6 +68,16 @@ public class SysCode {
 	public void setCodeType(int codeType) {
 		this.codeType = codeType;
 	}
-	
-	
+
+	@Override
+	public SysCode mapRow(ResultSet rs, int in) throws SQLException {
+		// TODO Auto-generated method stub
+		SysCode code = new SysCode();
+		code.setCode(rs.getString("code"));
+		code.setCodeName(rs.getString("code_name"));
+		code.setCodeDese(rs.getString("code_desc"));
+		code.setCodeType(rs.getInt("code_type"));
+		code.setCodeParent(rs.getString("parent_code"));
+		return code;
+	}
 }
