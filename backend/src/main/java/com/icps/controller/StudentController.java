@@ -1,14 +1,12 @@
 package com.icps.controller;
 
-import com.icps.entity.Student;
-import com.icps.repository.StudentRepository;
+import com.icps.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,7 +15,7 @@ import java.util.Map;
 public class StudentController {
     
     @Autowired
-    private StudentRepository studentRepository;
+    private StudentService studentService;
     
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllStudents(
@@ -27,15 +25,15 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            List<Student> students = studentRepository.findPage(page, size);
-            int total = studentRepository.count();
+            // 使用StudentService的分页查询功能
+            Map<String, Object> pageResult = studentService.getStudentsByPage(page, size);
             
             response.put("success", true);
-            response.put("data", students);
+            response.put("data", pageResult.get("list"));
             response.put("currentPage", page);
             response.put("pageSize", size);
-            response.put("total", total);
-            response.put("totalPages", (int) Math.ceil((double) total / size));
+            response.put("total", pageResult.get("total"));
+            response.put("totalPages", pageResult.get("totalPages"));
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -50,14 +48,16 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Student student = studentRepository.findById(id);
-            if (student != null) {
+            // 使用StudentService获取学生详情
+            Map<String, Object> studentResult = studentService.getStudentById(id);
+            
+            if (Boolean.TRUE.equals(studentResult.get("success"))) {
                 response.put("success", true);
-                response.put("data", student);
+                response.put("data", studentResult.get("student"));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "学生不存在");
+                response.put("message", studentResult.get("message"));
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
@@ -77,7 +77,8 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            List<Student> students = studentRepository.findByCondition(name, dept, major, sex);
+            // 使用StudentService进行条件查询
+            java.util.List<Map<String, Object>> students = studentService.searchStudents(name, dept, major, sex);
             response.put("success", true);
             response.put("data", students);
             response.put("total", students.size());
@@ -91,30 +92,22 @@ public class StudentController {
     
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateStudent(
-            @PathVariable String id, @RequestBody Student student) {
+            @PathVariable String id, @RequestBody Map<String, Object> studentData) {
         
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Student existingStudent = studentRepository.findById(id);
-            if (existingStudent == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
+            // 使用StudentService更新学生信息
+            Map<String, Object> updateResult = studentService.updateStudent(id, studentData);
             
-            // 设置更新后的学生信息
-            student.setStuCardNum(id);
-            int result = studentRepository.update(student);
-            
-            if (result > 0) {
+            if (Boolean.TRUE.equals(updateResult.get("success"))) {
                 response.put("success", true);
-                response.put("message", "学生信息更新成功");
+                response.put("message", updateResult.get("message"));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "学生信息更新失败");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                response.put("message", updateResult.get("message"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             response.put("success", false);
@@ -128,23 +121,17 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Student existingStudent = studentRepository.findById(id);
-            if (existingStudent == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
+            // 使用StudentService删除学生
+            Map<String, Object> deleteResult = studentService.deleteStudent(id);
             
-            int result = studentRepository.delete(id);
-            
-            if (result > 0) {
+            if (Boolean.TRUE.equals(deleteResult.get("success"))) {
                 response.put("success", true);
-                response.put("message", "学生删除成功");
+                response.put("message", deleteResult.get("message"));
                 return ResponseEntity.ok(response);
             } else {
                 response.put("success", false);
-                response.put("message", "学生删除失败");
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+                response.put("message", deleteResult.get("message"));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             response.put("success", false);
@@ -158,9 +145,10 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            int count = studentRepository.count();
+            // 使用StudentService获取学生统计信息
+            Map<String, Object> statistics = studentService.getStudentStatistics();
             response.put("success", true);
-            response.put("count", count);
+            response.put("count", statistics.get("totalStudents"));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

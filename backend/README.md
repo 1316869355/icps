@@ -22,8 +22,8 @@ backend/
 ├── src/main/java/com/icps/
 │   ├── IcpsApplication.java          # 应用启动类
 │   ├── controller/                   # 控制器层
-│   │   ├── AuthController.java       # 认证控制器
-│   │   └── StudentController.java     # 学生管理控制器
+│   │   ├── AuthController.java       # 认证控制器（已重构为使用Service层）
+│   │   └── StudentController.java     # 学生管理控制器（已重构为使用Service层）
 │   ├── entity/                       # 实体类
 │   │   ├── Student.java              # 学生实体
 │   │   ├── Teacher.java              # 教师实体

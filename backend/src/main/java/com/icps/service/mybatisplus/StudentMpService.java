@@ -1,36 +1,34 @@
-package com.icps.service;
+package com.icps.service.mybatisplus;
 
-import com.icps.entity.jpa.StudentJpa;
-import com.icps.repository.jpa.StudentJpaRepository;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.icps.entity.mybatisplus.StudentMp;
+import com.icps.mapper.StudentMpMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
- * 学生服务
+ * 学生服务 - MyBatisPlus版本
  */
+@Slf4j
 @Service
-public class StudentService {
+public class StudentMpService {
     
     @Autowired
-    private StudentJpaRepository studentRepository;
+    private StudentMpMapper studentMpMapper;
     
     /**
      * 获取所有学生列表
      */
     public List<Map<String, Object>> getAllStudents() {
-        List<StudentJpa> students = studentRepository.findAll();
+        List<StudentMp> students = studentMpMapper.selectList(null);
         return convertStudentsToMap(students);
     }
     
@@ -38,15 +36,16 @@ public class StudentService {
      * 分页查询学生列表
      */
     public Map<String, Object> getStudentsByPage(int pageNum, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<StudentJpa> studentPage = studentRepository.findAll(pageable);
+        Page<StudentMp> page = new Page<>(pageNum, pageSize);
+        IPage<StudentMp> studentPage = studentMpMapper.selectPage(page, 
+            new LambdaQueryWrapper<StudentMp>().orderByDesc(StudentMp::getCreatedAt));
         
         Map<String, Object> result = new HashMap<>();
-        result.put("list", convertStudentsToMap(studentPage.getContent()));
-        result.put("total", studentPage.getTotalElements());
+        result.put("list", convertStudentsToMap(studentPage.getRecords()));
+        result.put("total", studentPage.getTotal());
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
-        result.put("totalPages", studentPage.getTotalPages());
+        result.put("totalPages", studentPage.getPages());
         
         return result;
     }
@@ -55,26 +54,22 @@ public class StudentService {
      * 根据条件查询学生
      */
     public List<Map<String, Object>> searchStudents(String name, String dept, String major, Integer sex) {
-        Specification<StudentJpa> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            
-            if (name != null && !name.trim().isEmpty()) {
-                predicates.add(cb.like(root.get("sname"), "%" + name + "%"));
-            }
-            if (dept != null && !dept.equals("0")) {
-                predicates.add(cb.equal(root.get("stuDept"), dept));
-            }
-            if (major != null && !major.equals("0")) {
-                predicates.add(cb.equal(root.get("stuMajor"), major));
-            }
-            if (sex != null && sex != 0) {
-                predicates.add(cb.equal(root.get("ssex"), sex));
-            }
-            
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        LambdaQueryWrapper<StudentMp> wrapper = new LambdaQueryWrapper<>();
         
-        List<StudentJpa> students = studentRepository.findAll(spec);
+        if (name != null && !name.trim().isEmpty()) {
+            wrapper.like(StudentMp::getSname, name);
+        }
+        if (dept != null && !dept.equals("0")) {
+            wrapper.eq(StudentMp::getStuDept, dept);
+        }
+        if (major != null && !major.equals("0")) {
+            wrapper.eq(StudentMp::getStuMajor, major);
+        }
+        if (sex != null && sex != 0) {
+            wrapper.eq(StudentMp::getSsex, sex);
+        }
+        
+        List<StudentMp> students = studentMpMapper.selectList(wrapper);
         return convertStudentsToMap(students);
     }
     
@@ -82,11 +77,11 @@ public class StudentService {
      * 根据ID获取学生详情
      */
     public Map<String, Object> getStudentById(String studentId) {
-        Optional<StudentJpa> studentOpt = studentRepository.findById(studentId);
-        if (studentOpt.isPresent()) {
+        StudentMp student = studentMpMapper.selectById(studentId);
+        if (student != null) {
             Map<String, Object> result = new HashMap<>();
             result.put("success", true);
-            result.put("student", convertStudentToMap(studentOpt.get()));
+            result.put("student", convertStudentToMap(student));
             return result;
         } else {
             Map<String, Object> result = new HashMap<>();
@@ -100,9 +95,8 @@ public class StudentService {
      * 更新学生信息
      */
     public Map<String, Object> updateStudent(String studentId, Map<String, Object> studentData) {
-        Optional<StudentJpa> studentOpt = studentRepository.findById(studentId);
-        if (studentOpt.isPresent()) {
-            StudentJpa student = studentOpt.get();
+        StudentMp student = studentMpMapper.selectById(studentId);
+        if (student != null) {
             
             // 更新学生信息
             if (studentData.containsKey("sname")) {
@@ -142,12 +136,17 @@ public class StudentService {
                 student.setRegion((String) studentData.get("region"));
             }
             
-            studentRepository.save(student);
+            int result = studentMpMapper.updateById(student);
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "学生信息更新成功");
-            return result;
+            Map<String, Object> response = new HashMap<>();
+            if (result > 0) {
+                response.put("success", true);
+                response.put("message", "学生信息更新成功");
+            } else {
+                response.put("success", false);
+                response.put("message", "学生信息更新失败");
+            }
+            return response;
         } else {
             Map<String, Object> result = new HashMap<>();
             result.put("success", false);
@@ -157,27 +156,55 @@ public class StudentService {
     }
     
     /**
+     * 添加学生
+     */
+    public Map<String, Object> addStudent(StudentMp student) {
+        try {
+            int result = studentMpMapper.insert(student);
+            
+            Map<String, Object> response = new HashMap<>();
+            if (result > 0) {
+                response.put("success", true);
+                response.put("message", "学生添加成功");
+            } else {
+                response.put("success", false);
+                response.put("message", "学生添加失败");
+            }
+            return response;
+        } catch (Exception e) {
+            log.error("添加学生失败: {}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "学生添加失败: " + e.getMessage());
+            return response;
+        }
+    }
+    
+    /**
      * 删除学生
      */
     public Map<String, Object> deleteStudent(String studentId) {
-        Map<String, Object> result = new HashMap<>();
-        
         try {
-            Optional<StudentJpa> studentOpt = studentRepository.findById(studentId);
-            if (studentOpt.isPresent()) {
-                studentRepository.delete(studentOpt.get());
-                result.put("success", true);
-                result.put("message", "学生删除成功");
+            int result = studentMpMapper.deleteById(studentId);
+            
+            Map<String, Object> response = new HashMap<>();
+            if (result > 0) {
+                response.put("success", true);
+                response.put("message", "学生删除成功");
             } else {
-                result.put("success", false);
-                result.put("message", "学生不存在");
+                response.put("success", false);
+                response.put("message", "学生不存在或删除失败");
             }
+            return response;
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "删除学生失败: " + e.getMessage());
+            log.error("删除学生失败: {}", e.getMessage());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "学生删除失败: " + e.getMessage());
+            return response;
         }
-        
-        return result;
     }
     
     /**
@@ -187,14 +214,14 @@ public class StudentService {
         Map<String, Object> statistics = new HashMap<>();
         
         // 总学生数
-        long totalStudents = studentRepository.countStudents();
+        long totalStudents = studentMpMapper.selectCount(null);
         statistics.put("totalStudents", totalStudents);
         
         // 按学院统计
-        List<Object[]> deptStats = studentRepository.countByDepartment();
+        List<Map<String, Object>> deptStats = studentMpMapper.countByDepartment();
         Map<String, Long> deptCount = new HashMap<>();
-        for (Object[] stat : deptStats) {
-            deptCount.put((String) stat[0], (Long) stat[1]);
+        for (Map<String, Object> stat : deptStats) {
+            deptCount.put((String) stat.get("stu_dept"), (Long) stat.get("count"));
         }
         statistics.put("departmentStats", deptCount);
         
@@ -204,9 +231,9 @@ public class StudentService {
     /**
      * 转换学生列表为Map列表
      */
-    private List<Map<String, Object>> convertStudentsToMap(List<StudentJpa> students) {
+    private List<Map<String, Object>> convertStudentsToMap(List<StudentMp> students) {
         List<Map<String, Object>> result = new ArrayList<>();
-        for (StudentJpa student : students) {
+        for (StudentMp student : students) {
             result.add(convertStudentToMap(student));
         }
         return result;
@@ -215,7 +242,7 @@ public class StudentService {
     /**
      * 转换单个学生实体为Map
      */
-    private Map<String, Object> convertStudentToMap(StudentJpa student) {
+    private Map<String, Object> convertStudentToMap(StudentMp student) {
         Map<String, Object> studentMap = new HashMap<>();
         studentMap.put("id", student.getStuCardNo());
         studentMap.put("studentId", student.getSno());
