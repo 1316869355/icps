@@ -1,15 +1,15 @@
 package com.icps.service;
 
-import com.icps.entity.jpa.StudentJpa;
-import com.icps.entity.jpa.TeacherJpa;
-import com.icps.repository.jpa.StudentJpaRepository;
-import com.icps.repository.jpa.TeacherJpaRepository;
+import com.icps.entity.mybatisplus.StudentMp;
+import com.icps.entity.mybatisplus.TeacherMp;
+import com.icps.mapper.StudentMpMapper;
+import com.icps.mapper.TeacherMpMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+
 
 /**
  * 认证服务
@@ -18,10 +18,10 @@ import java.util.Optional;
 public class AuthService {
     
     @Autowired
-    private StudentJpaRepository studentRepository;
+    private StudentMpMapper studentMapper;
     
     @Autowired
-    private TeacherJpaRepository teacherRepository;
+    private TeacherMpMapper teacherMapper;
     
     /**
      * 用户登录
@@ -32,11 +32,10 @@ public class AuthService {
         try {
             if ("student".equals(role)) {
                 // 学生登录验证
-                boolean loginSuccess = studentRepository.existsByCardNoAndName(password, username);
+                boolean loginSuccess = studentMapper.existsByCardNoAndName(password, username);
                 if (loginSuccess) {
-                    Optional<StudentJpa> studentOpt = studentRepository.findById(password);
-                    if (studentOpt.isPresent()) {
-                        StudentJpa student = studentOpt.get();
+                    StudentMp student = studentMapper.selectById(password);
+                    if (student != null) {
                         result.put("success", true);
                         result.put("message", "登录成功");
                         result.put("role", "student");
@@ -52,11 +51,10 @@ public class AuthService {
                 }
             } else if ("teacher".equals(role)) {
                 // 教师登录验证
-                boolean loginSuccess = teacherRepository.existsByCardNoAndName(password, username);
+                boolean loginSuccess = teacherMapper.existsByCardNoAndName(password, username);
                 if (loginSuccess) {
-                    Optional<TeacherJpa> teacherOpt = teacherRepository.findByTeacherCardNo(password);
-                    if (teacherOpt.isPresent()) {
-                        TeacherJpa teacher = teacherOpt.get();
+                    TeacherMp teacher = teacherMapper.selectByCardNo(password);
+                    if (teacher != null) {
                         result.put("success", true);
                         result.put("message", "登录成功");
                         result.put("role", "teacher");
@@ -90,19 +88,19 @@ public class AuthService {
         
         try {
             if ("student".equals(role)) {
-                Optional<StudentJpa> studentOpt = studentRepository.findById(userId);
-                if (studentOpt.isPresent()) {
+                StudentMp student = studentMapper.selectById(userId);
+                if (student != null) {
                     result.put("success", true);
-                    result.put("user", convertStudentToMap(studentOpt.get()));
+                    result.put("user", convertStudentToMap(student));
                 } else {
                     result.put("success", false);
                     result.put("message", "学生信息不存在");
                 }
             } else if ("teacher".equals(role)) {
-                Optional<TeacherJpa> teacherOpt = teacherRepository.findByTeacherCardNo(userId);
-                if (teacherOpt.isPresent()) {
+                TeacherMp teacher = teacherMapper.selectByCardNo(userId);
+                if (teacher != null) {
                     result.put("success", true);
-                    result.put("user", convertTeacherToMap(teacherOpt.get()));
+                    result.put("user", convertTeacherToMap(teacher));
                 } else {
                     result.put("success", false);
                     result.put("message", "教师信息不存在");
@@ -129,7 +127,7 @@ public class AuthService {
     /**
      * 转换学生实体为Map
      */
-    private Map<String, Object> convertStudentToMap(StudentJpa student) {
+    private Map<String, Object> convertStudentToMap(StudentMp student) {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("id", student.getStuCardNo());
         userMap.put("studentId", student.getSno());
@@ -152,7 +150,7 @@ public class AuthService {
     /**
      * 转换教师实体为Map
      */
-    private Map<String, Object> convertTeacherToMap(TeacherJpa teacher) {
+    private Map<String, Object> convertTeacherToMap(TeacherMp teacher) {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("id", teacher.getTeacherId());
         userMap.put("cardNo", teacher.getTeacherCardNo());

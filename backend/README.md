@@ -1,16 +1,16 @@
 # ICPS 后端模块
 
-学生信息管理系统后端API，基于Spring Boot构建。
+学生信息管理系统后端API，基于Spring Boot + MyBatis-Plus构建。
 
 ## 项目概述
 
-ICPS (Intelligent Campus Performance System) 后端模块提供了学生信息管理的RESTful API接口，支持学生、教师、课程等核心功能。
+ICPS (Intelligent Campus Performance System) 后端模块提供了学生信息管理的RESTful API接口，支持学生、教师、课程等核心功能。项目采用分层架构设计，支持多种ORM框架。
 
 ## 技术栈
 
 - **框架**: Spring Boot 2.7.0
 - **数据库**: MySQL 8.0
-- **ORM**: Spring Data JPA + Hibernate
+- **主ORM**: MyBatis-Plus 3.5.3.1
 - **数据库迁移**: Flyway
 - **构建工具**: Maven
 - **Java版本**: 1.8
@@ -22,29 +22,35 @@ backend/
 ├── src/main/java/com/icps/
 │   ├── IcpsApplication.java          # 应用启动类
 │   ├── controller/                   # 控制器层
-│   │   ├── AuthController.java       # 认证控制器（已重构为使用Service层）
-│   │   └── StudentController.java     # 学生管理控制器（已重构为使用Service层）
+│   │   ├── AuthController.java       # 认证控制器
+│   │   └── StudentController.java     # 学生管理控制器
+│   ├── config/                       # 配置类
+│   │   ├── MybatisPlusConfig.java    # MyBatis-Plus配置
+│   │   └── MyMetaObjectHandler.java  # 元数据处理器
 │   ├── entity/                       # 实体类
 │   │   ├── Student.java              # 学生实体
 │   │   ├── Teacher.java              # 教师实体
-│   │   └── jpa/                      # JPA实体类
-│   │       ├── CourseJpa.java
-│   │       ├── StudentCourseJpa.java
-│   │       ├── StudentJpa.java
-│   │       ├── TeacherJpa.java
-│   │       └── UserJpa.java
-│   ├── repository/                   # 数据访问层
-│   │   ├── StudentRepository.java    # 学生仓库
-│   │   ├── TeacherRepository.java    # 教师仓库
-│   │   └── jpa/                      # JPA仓库
-│   │       ├── CourseJpaRepository.java
-│   │       ├── StudentCourseJpaRepository.java
-│   │       ├── StudentJpaRepository.java
-│   │       ├── TeacherJpaRepository.java
-│   │       └── UserJpaRepository.java
+│   │   └── mybatisplus/              # MyBatis-Plus实体类
+│   │       ├── CourseMp.java
+│   │       ├── StudentCourseMp.java
+│   │       ├── StudentMp.java
+│   │       ├── TeacherMp.java
+│   │       └── UserMp.java
+│   ├── mapper/                       # MyBatis-Plus Mapper接口
+│   │   ├── CourseMpMapper.java
+│   │   ├── StudentCourseMpMapper.java
+│   │   ├── StudentMpMapper.java
+│   │   ├── TeacherMpMapper.java
+│   │   └── UserMpMapper.java
 │   └── service/                      # 业务逻辑层
+│       ├── mybatisplus/              # MyBatis-Plus服务层
+│       │   ├── CourseMpService.java
+│       │   ├── StudentCourseMpService.java
+│       │   ├── StudentMpService.java
+│       │   ├── TeacherMpService.java
+│       │   └── UserMpService.java
 │       ├── AuthService.java          # 认证服务
-│       └── StudentService.java       # 学生服务
+│       └── StudentService.java       # 学生服务(主要业务)
 ├── src/main/resources/
 │   ├── application.yml               # 应用配置
 │   └── db/migration/                 # 数据库迁移脚本
@@ -101,6 +107,26 @@ mvn exec:java -Dexec.mainClass="com.icps.IcpsApplication"
 
 应用启动后，访问：http://localhost:8081/api
 
+### MyBatis-Plus特性
+
+项目已集成MyBatis-Plus，提供以下功能：
+- 自动CRUD操作
+- 分页插件
+- 逻辑删除
+- 自动填充
+- 条件构造器
+- 主键生成策略
+
+### MyBatis-Plus特性
+
+项目已集成MyBatis-Plus，提供以下功能：
+- 自动CRUD操作
+- 分页插件
+- 逻辑删除
+- 自动填充
+- 条件构造器
+- 主键生成策略
+
 ## API接口
 
 ### 认证相关
@@ -148,8 +174,23 @@ mvn exec:java -Dexec.mainClass="com.icps.IcpsApplication"
 - 服务端口：8081
 - 上下文路径：/api
 - 数据库连接池配置
-- JPA/Hibernate配置
+- MyBatis-Plus配置（主ORM）
 - 日志级别配置
+
+### MyBatis-Plus配置
+
+```yaml
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+```
 
 ### 安全配置
 
@@ -158,19 +199,20 @@ mvn exec:java -Dexec.mainClass="com.icps.IcpsApplication"
 
 ## 开发指南
 
-### 添加新功能
+### 添加新功能（MyBatis-Plus方式）
 
-1. 在`entity`包下创建实体类
-2. 在`repository`包下创建数据访问接口
-3. 在`service`包下实现业务逻辑
+1. 在`entity/mybatisplus`包下创建实体类，继承`BaseMapper`
+2. 在`mapper`包下创建Mapper接口，继承`BaseMapper<T>`
+3. 在`service/mybatisplus`包下创建Service类，实现业务逻辑
 4. 在`controller`包下创建REST API
 
 ### 代码规范
 
 - 遵循Spring Boot最佳实践
-- 使用JPA注解进行实体映射
+- 使用MyBatis-Plus注解进行实体映射（主推）
 - 统一的异常处理机制
 - RESTful API设计规范
+- 优先使用MyBatis-Plus进行新功能开发
 
 ## 构建和部署
 

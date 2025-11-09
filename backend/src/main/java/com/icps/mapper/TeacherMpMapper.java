@@ -24,6 +24,12 @@ public interface TeacherMpMapper extends BaseMapper<TeacherMp> {
     TeacherMp selectByCardNo(@Param("cardNo") String cardNo);
     
     /**
+     * 教师登录验证
+     */
+    @Select("SELECT COUNT(*) > 0 FROM icps_teacher WHERE teacher_card_no = #{cardNo} AND teacher_name LIKE CONCAT('%', #{name}, '%')")
+    boolean existsByCardNoAndName(@Param("cardNo") String cardNo, @Param("name") String name);
+    
+    /**
      * 根据姓名模糊查询
      */
     @Select("SELECT * FROM icps_teacher WHERE teacher_name LIKE CONCAT('%', #{name}, '%')")
