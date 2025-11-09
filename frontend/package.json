@@ -1,0 +1,32 @@
+{
+  "name": "icps-frontend",
+  "version": "1.0.0",
+  "description": "ICPS学生信息管理系统前端",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000"
+  },
+  "dependencies": {
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4",
+    "pinia": "^2.1.4",
+    "axios": "^1.4.0",
+    "element-plus": "^2.3.8",
+    "@element-plus/icons-vue": "^2.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.4.0",
+    "sass": "^1.63.6"
+  },
+  "keywords": [
+    "vue3",
+    "element-plus",
+    "student-management"
+  ],
+  "author": "ICPS Team",
+  "license": "MIT"
+}
