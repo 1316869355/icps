@@ -34,6 +34,18 @@ public class UserMpServiceImpl implements UserMpService {
     }
     
     /**
+     * 根据用户名和密码查询用户
+     */
+    @Override
+    public boolean getUserByUsernameAndPassword(String username, String password) {
+        UserMp user = userMpMapper.selectByUsername(username);
+        if (user != null) {
+            return user.getPassword().equals(password);
+        }
+        return false;
+    }
+
+    /**
      * 根据角色查询用户
      */
     @Override

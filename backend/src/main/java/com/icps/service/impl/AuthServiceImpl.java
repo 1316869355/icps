@@ -3,6 +3,7 @@ package com.icps.service.impl;
 import com.icps.aspect.Log;
 import com.icps.entity.StudentMp;
 import com.icps.entity.TeacherMp;
+import com.icps.entity.UserMp;
 import com.icps.mapper.StudentMpMapper;
 import com.icps.mapper.TeacherMpMapper;
 import com.icps.service.AuthService;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Resource;
 
 
 /**
@@ -26,6 +29,9 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private TeacherMpMapper teacherMapper;
     
+    @Resource
+    private UserMpServiceImpl userMpServiceImpl;
+
     /**
      * 用户登录
      */
@@ -35,47 +41,22 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> result = new HashMap<>();
         
         try {
-            if ("student".equals(role)) {
-                // 学生登录验证
-                boolean loginSuccess = studentMapper.existsByCardNoAndName(password, username);
-                if (loginSuccess) {
-                    StudentMp student = studentMapper.selectById(password);
-                    if (student != null) {
-                        result.put("success", true);
-                        result.put("message", "登录成功");
-                        result.put("role", "student");
-                        result.put("user", convertStudentToMap(student));
-                        result.put("token", generateToken(student.getStuCardNo(), "student"));
-                    } else {
-                        result.put("success", false);
-                        result.put("message", "学生信息不存在");
-                    }
+            boolean loginSuccess = userMpServiceImpl.getUserByUsernameAndPassword(username, password);
+            if (loginSuccess) {
+                StudentMp student = studentMapper.selectById(password);
+                if (student != null) {
+                    result.put("success", true);
+                    result.put("message", "登录成功");
+                    result.put("role", role);
+                    result.put("user", convertStudentToMap(student));
+                    result.put("token", generateToken(student.getStuCardNo(), role));
                 } else {
                     result.put("success", false);
-                    result.put("message", "身份证号或姓名错误");
-                }
-            } else if ("teacher".equals(role)) {
-                // 教师登录验证
-                boolean loginSuccess = teacherMapper.existsByCardNoAndName(password, username);
-                if (loginSuccess) {
-                    TeacherMp teacher = teacherMapper.selectByCardNo(password);
-                    if (teacher != null) {
-                        result.put("success", true);
-                        result.put("message", "登录成功");
-                        result.put("role", "teacher");
-                        result.put("user", convertTeacherToMap(teacher));
-                        result.put("token", generateToken(teacher.getTeacherCardNo(), "teacher"));
-                    } else {
-                        result.put("success", false);
-                        result.put("message", "教师信息不存在");
-                    }
-                } else {
-                    result.put("success", false);
-                    result.put("message", "身份证号或姓名错误");
+                    result.put("message", "信息不存在");
                 }
             } else {
                 result.put("success", false);
-                result.put("message", "无效的角色类型");
+                result.put("message", "账号或密码错误");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -98,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
                 StudentMp student = studentMapper.selectById(userId);
                 if (student != null) {
                     result.put("success", true);
-                    result.put("user", convertStudentToMap(student));
+                    result.put("user", convertUserToMap(role, null, student, null));
                 } else {
                     result.put("success", false);
                     result.put("message", "学生信息不存在");
@@ -107,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
                 TeacherMp teacher = teacherMapper.selectByCardNo(userId);
                 if (teacher != null) {
                     result.put("success", true);
-                    result.put("user", convertTeacherToMap(teacher));
+                    result.put("user", convertUserToMap(role, null, null, teacher));
                 } else {
                     result.put("success", false);
                     result.put("message", "教师信息不存在");
@@ -129,6 +110,20 @@ public class AuthServiceImpl implements AuthService {
      */
     private String generateToken(String userId, String role) {
         return "icps_" + role + "_" + userId + "_" + System.currentTimeMillis();
+    }
+    
+    private Map<String, Object> convertUserToMap(String role, UserMp user, StudentMp studentMp, TeacherMp teacherMp) {
+        if ("student".equals(role)) {
+            return convertStudentToMap(studentMp);
+        } else if ("teacher".equals(role)) {
+            return convertTeacherToMap(teacherMp);
+        } else {
+           Map<String, Object> userMap = new HashMap<>();
+           userMap.put("id", user.getUserId());
+           userMap.put("username", user.getUsername());
+           userMap.put("role", user.getRole());
+           return userMap;
+        }
     }
     
     /**

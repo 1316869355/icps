@@ -51,4 +51,9 @@ public interface UserMpService {
      * 获取用户统计信息
      */
     public Map<String, Object> getUserStatistics();
+
+    /**
+     * 根据用户名和密码查询用户
+     */
+    boolean getUserByUsernameAndPassword(String username, String password);
 }
