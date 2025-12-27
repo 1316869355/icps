@@ -19,8 +19,8 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
-        String userName = loginRequest.get("userName");
-        String cardNo = loginRequest.get("cardNo");
+        String userName = loginRequest.get("username");
+        String cardNo = loginRequest.get("password");
         String roleType = loginRequest.get("role");
         
         Map<String, Object> response = new HashMap<>();
@@ -32,13 +32,9 @@ public class AuthController {
         }
         
         try {
-            // 转换角色类型字符串为service层需要的格式
-            String role;
-            if ("1".equals(roleType)) {
-                role = "teacher";
-            } else if ("2".equals(roleType)) {
-                role = "student";
-            } else {
+            // 直接使用前端传递的角色类型
+            String role = roleType;
+            if (!"teacher".equals(role) && !"student".equals(role)) {
                 response.put("success", false);
                 response.put("message", "无效的角色类型");
                 return ResponseEntity.badRequest().body(response);
