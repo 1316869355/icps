@@ -74,7 +74,10 @@ npm install
 ```bash
 npm run dev
 ```
-
+### 本地编译并运行命令
+```bash
+cd "d:\workspace\codebuddy\icps\frontend" && npm install && npm run dev
+```
 #### 成功启动标识
 
 项目启动成功后，会看到类似以下输出：
