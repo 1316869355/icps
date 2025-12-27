@@ -17,10 +17,10 @@ import java.time.LocalDateTime;
 public class TeacherMp {
     
     /**
-     * 教师ID（主键）
+     * 教师ID（主键）与user表主键对应
      */
-    @TableId(value = "teacher_id", type = IdType.AUTO)
-    private Long teacherId;
+    @TableId(value = "user_id", type = IdType.ASSIGN_ID)
+    private Long userId;
     
     /**
      * 身份证号

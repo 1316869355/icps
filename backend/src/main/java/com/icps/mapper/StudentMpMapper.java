@@ -17,6 +17,12 @@ import java.util.Map;
  */
 @Mapper
 public interface StudentMpMapper extends BaseMapper<StudentMp> {
+
+    /**
+     * 根据用户id查询
+     */
+    @Select("SELECT * FROM icps_stu WHERE user_id = #{userId}")
+    StudentMp selectByUserId(@Param("userId") Long userId);
     
     /**
      * 根据学号查找学生

@@ -1,5 +1,6 @@
 package com.icps.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icps.entity.UserMp;
 import com.icps.mapper.UserMpMapper;
 import com.icps.service.UserMpService;
@@ -19,7 +20,8 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class UserMpServiceImpl implements UserMpService {
+public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> implements UserMpService {
+
     
     @Autowired
     private UserMpMapper userMpMapper;
@@ -116,12 +118,6 @@ public class UserMpServiceImpl implements UserMpService {
             }
             if (userData.containsKey("role")) {
                 user.setRole((String) userData.get("role"));
-            }
-            if (userData.containsKey("stuCardNo")) {
-                user.setStuCardNo((String) userData.get("stuCardNo"));
-            }
-            if (userData.containsKey("teacherId")) {
-                user.setTeacherId((Long) userData.get("teacherId"));
             }
             if (userData.containsKey("status")) {
                 user.setStatus((Integer) userData.get("status"));
@@ -245,13 +241,12 @@ public class UserMpServiceImpl implements UserMpService {
     /**
      * 转换单个用户实体为Map
      */
-    private Map<String, Object> convertUserToMap(UserMp user) {
+    @Override
+    public Map<String, Object> convertUserToMap(UserMp user) {
         Map<String, Object> userMap = new HashMap<>();
-        userMap.put("id", user.getUserId());
+        userMap.put("userId", user.getUserId());
         userMap.put("username", user.getUsername());
         userMap.put("role", user.getRole());
-        userMap.put("stuCardNo", user.getStuCardNo());
-        userMap.put("teacherId", user.getTeacherId());
         userMap.put("status", user.getStatus());
         userMap.put("lastLogin", user.getLastLogin());
         userMap.put("createdAt", user.getCreatedAt());

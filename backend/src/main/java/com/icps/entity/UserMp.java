@@ -41,18 +41,6 @@ public class UserMp {
     private String role = "student";
     
     /**
-     * 学生身份证号
-     */
-    @TableField("stu_card_no")
-    private String stuCardNo;
-    
-    /**
-     * 教师ID
-     */
-    @TableField("teacher_id")
-    private Long teacherId;
-    
-    /**
      * 状态
      */
     @TableField("status")

@@ -3,6 +3,7 @@ package com.icps.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icps.entity.TeacherMp;
 import com.icps.mapper.TeacherMpMapper;
 import com.icps.service.TeacherMpService;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class TeacherMpServiceImpl implements TeacherMpService {
+public class TeacherMpServiceImpl extends ServiceImpl<TeacherMpMapper, TeacherMp> implements TeacherMpService {
     
     @Autowired
     private TeacherMpMapper teacherMpMapper;
@@ -245,9 +246,10 @@ public class TeacherMpServiceImpl implements TeacherMpService {
     /**
      * 转换单个教师实体为Map
      */
-    private Map<String, Object> convertTeacherToMap(TeacherMp teacher) {
+    @Override
+    public Map<String, Object> convertTeacherToMap(TeacherMp teacher) {
         Map<String, Object> teacherMap = new HashMap<>();
-        teacherMap.put("id", teacher.getTeacherId());
+        teacherMap.put("userId", teacher.getUserId());
         teacherMap.put("cardNo", teacher.getTeacherCardNo());
         teacherMap.put("name", teacher.getTeacherName());
         teacherMap.put("dept", teacher.getDept());

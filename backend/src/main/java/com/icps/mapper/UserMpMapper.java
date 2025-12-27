@@ -27,19 +27,7 @@ public interface UserMpMapper extends BaseMapper<UserMp> {
      */
     @Select("SELECT * FROM icps_user WHERE role = #{role}")
     List<UserMp> selectByRole(@Param("role") String role);
-    
-    /**
-     * 根据学生身份证号查询用户
-     */
-    @Select("SELECT * FROM icps_user WHERE stu_card_no = #{stuCardNo}")
-    UserMp selectByStuCardNo(@Param("stuCardNo") String stuCardNo);
-    
-    /**
-     * 根据教师ID查询用户
-     */
-    @Select("SELECT * FROM icps_user WHERE teacher_id = #{teacherId}")
-    UserMp selectByTeacherId(@Param("teacherId") Long teacherId);
-    
+
     /**
      * 验证用户登录
      */

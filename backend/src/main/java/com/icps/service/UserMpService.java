@@ -3,12 +3,13 @@ package com.icps.service;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.icps.entity.UserMp;
 
 /**
  * 用户服务 - MyBatisPlus版本
  */
-public interface UserMpService {
+public interface UserMpService extends IService<UserMp> {
 
     /**
      * 获取所有用户列表
@@ -56,4 +57,9 @@ public interface UserMpService {
      * 根据用户名和密码查询用户
      */
     boolean getUserByUsernameAndPassword(String username, String password);
+
+    /**
+     * 转换单个用户实体为Map
+     */
+    Map<String, Object> convertUserToMap(UserMp user);
 }

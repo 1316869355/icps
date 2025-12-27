@@ -1,5 +1,7 @@
 package com.icps.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +10,8 @@ import com.icps.entity.TeacherMp;
 /**
  * 教师服务 - MyBatisPlus版本
  */
-public interface TeacherMpService {
+
+public interface TeacherMpService extends IService<TeacherMp> {
 
     /**
      * 获取所有教师列表
@@ -49,4 +52,9 @@ public interface TeacherMpService {
      * 获取教师统计信息
      */
     public Map<String, Object> getTeacherStatistics();
+
+    /**
+     * 转换单个教师实体为Map
+     */
+    Map<String, Object> convertTeacherToMap(TeacherMp teacher);
 }

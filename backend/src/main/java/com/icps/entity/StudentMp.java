@@ -17,9 +17,15 @@ import java.time.LocalDateTime;
 public class StudentMp {
     
     /**
+     * 学生ID（主键）与user表主键对应
+     */
+    @TableId(value = "user_id", type = IdType.ASSIGN_ID)
+    private Long userId;
+
+    /**
      * 身份证号（主键）
      */
-    @TableId(value = "stu_card_no", type = IdType.INPUT)
+    @TableField(value = "stu_card_no")
     private String stuCardNo;
     
     /**

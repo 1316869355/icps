@@ -3,6 +3,7 @@ package com.icps.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icps.entity.StudentMp;
 import com.icps.mapper.StudentMpMapper;
 import com.icps.service.StudentMpService;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class StudentMpServiceImpl implements StudentMpService {
+public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp> implements StudentMpService {
     
     @Autowired
     private StudentMpMapper studentMpMapper;
@@ -252,9 +253,10 @@ public class StudentMpServiceImpl implements StudentMpService {
     /**
      * 转换单个学生实体为Map
      */
-    private Map<String, Object> convertStudentToMap(StudentMp student) {
+    @Override
+    public Map<String, Object> convertStudentToMap(StudentMp student) {
         Map<String, Object> studentMap = new HashMap<>();
-        studentMap.put("id", student.getStuCardNo());
+        studentMap.put("userId", student.getUserId());
         studentMap.put("studentId", student.getSno());
         studentMap.put("name", student.getSname());
         studentMap.put("gender", student.getSsex() == 1 ? "男" : "女");

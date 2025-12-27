@@ -3,12 +3,13 @@ package com.icps.service;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.icps.entity.StudentMp;
 
 /**
  * 学生服务 - MyBatisPlus版本
  */
-public interface StudentMpService {
+public interface StudentMpService extends IService<StudentMp> {
     
     /**
      * 获取所有学生列表
@@ -49,5 +50,10 @@ public interface StudentMpService {
      * 获取学生统计信息
      */
     public Map<String, Object> getStudentStatistics();
+
+    /**
+     * 转换单个学生实体为Map
+     */
+    Map<String, Object> convertStudentToMap(StudentMp student);
     
 }
