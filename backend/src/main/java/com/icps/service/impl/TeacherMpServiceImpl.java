@@ -3,7 +3,7 @@ package com.icps.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.icps.entity.mybatisplus.TeacherMp;
+import com.icps.entity.TeacherMp;
 import com.icps.mapper.TeacherMpMapper;
 import com.icps.service.TeacherMpService;
 

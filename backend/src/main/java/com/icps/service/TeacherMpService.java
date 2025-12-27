@@ -1,8 +1,9 @@
 package com.icps.service;
 
-import com.icps.entity.mybatisplus.TeacherMp;
 import java.util.List;
 import java.util.Map;
+
+import com.icps.entity.TeacherMp;
 
 /**
  * 教师服务 - MyBatisPlus版本

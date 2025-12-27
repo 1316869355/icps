@@ -1,8 +1,8 @@
 package com.icps.service.impl;
 
 import com.icps.aspect.Log;
-import com.icps.entity.mybatisplus.StudentMp;
-import com.icps.entity.mybatisplus.TeacherMp;
+import com.icps.entity.StudentMp;
+import com.icps.entity.TeacherMp;
 import com.icps.mapper.StudentMpMapper;
 import com.icps.mapper.TeacherMpMapper;
 import com.icps.service.AuthService;

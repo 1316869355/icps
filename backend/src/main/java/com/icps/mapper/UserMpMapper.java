@@ -1,7 +1,8 @@
 package com.icps.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.icps.entity.mybatisplus.UserMp;
+import com.icps.entity.UserMp;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

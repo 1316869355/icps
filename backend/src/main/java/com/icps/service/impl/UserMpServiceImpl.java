@@ -1,6 +1,6 @@
 package com.icps.service.impl;
 
-import com.icps.entity.mybatisplus.UserMp;
+import com.icps.entity.UserMp;
 import com.icps.mapper.UserMpMapper;
 import com.icps.service.UserMpService;
 

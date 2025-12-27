@@ -1,9 +1,9 @@
 package com.icps.service;
 
-import com.icps.entity.mybatisplus.StudentCourseMp;
-
 import java.util.List;
 import java.util.Map;
+
+import com.icps.entity.StudentCourseMp;
 
 /**
  * 学生选课服务接口 - MyBatisPlus版本

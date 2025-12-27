@@ -1,6 +1,6 @@
 package com.icps.service.impl;
 
-import com.icps.entity.mybatisplus.StudentCourseMp;
+import com.icps.entity.StudentCourseMp;
 import com.icps.mapper.StudentCourseMpMapper;
 import com.icps.service.StudentCourseMpService;
 
