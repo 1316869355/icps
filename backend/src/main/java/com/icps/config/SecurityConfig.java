@@ -62,7 +62,7 @@ public class SecurityConfig {
             // 配置请求授权
             .authorizeHttpRequests(authorize -> authorize
                 // 允许所有用户访问的接口
-                .antMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/health").permitAll()
+                .antMatchers("/auth/login", "/auth/logout", "/auth/health").permitAll()
                 // 其他所有请求需要认证
                 .anyRequest().authenticated()
             )
