@@ -1,7 +1,9 @@
-package com.icps.service.mybatisplus;
+package com.icps.service.impl;
 
 import com.icps.entity.mybatisplus.UserMp;
 import com.icps.mapper.UserMpMapper;
+import com.icps.service.UserMpService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class UserMpService {
+public class UserMpServiceImpl implements UserMpService {
     
     @Autowired
     private UserMpMapper userMpMapper;
@@ -25,6 +27,7 @@ public class UserMpService {
     /**
      * 获取所有用户列表
      */
+    @Override
     public List<Map<String, Object>> getAllUsers() {
         List<UserMp> users = userMpMapper.selectList(null);
         return convertUsersToMap(users);
@@ -33,6 +36,7 @@ public class UserMpService {
     /**
      * 根据角色查询用户
      */
+    @Override
     public List<Map<String, Object>> getUsersByRole(String role) {
         List<UserMp> users = userMpMapper.selectByRole(role);
         return convertUsersToMap(users);
@@ -41,6 +45,7 @@ public class UserMpService {
     /**
      * 根据用户名查找用户
      */
+    @Override
     public Map<String, Object> getUserByUsername(String username) {
         UserMp user = userMpMapper.selectByUsername(username);
         if (user != null) {
@@ -59,6 +64,7 @@ public class UserMpService {
     /**
      * 用户登录验证
      */
+    @Override
     public Map<String, Object> login(String username, String password) {
         boolean isValid = userMpMapper.validateLogin(username, password);
         
@@ -84,6 +90,7 @@ public class UserMpService {
     /**
      * 更新用户信息
      */
+    @Override
     public Map<String, Object> updateUser(Long userId, Map<String, Object> userData) {
         UserMp user = userMpMapper.selectById(userId);
         if (user != null) {
@@ -130,6 +137,7 @@ public class UserMpService {
     /**
      * 添加用户
      */
+    @Override
     public Map<String, Object> addUser(UserMp user) {
         try {
             // 检查用户名是否已存在
@@ -165,6 +173,7 @@ public class UserMpService {
     /**
      * 删除用户
      */
+    @Override
     public Map<String, Object> deleteUser(Long userId) {
         try {
             int result = userMpMapper.deleteById(userId);
@@ -191,6 +200,7 @@ public class UserMpService {
     /**
      * 获取用户统计信息
      */
+    @Override
     public Map<String, Object> getUserStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         

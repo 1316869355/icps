@@ -1,10 +1,12 @@
-package com.icps.service.mybatisplus;
+package com.icps.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icps.entity.mybatisplus.TeacherMp;
 import com.icps.mapper.TeacherMpMapper;
+import com.icps.service.TeacherMpService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class TeacherMpService {
+public class TeacherMpServiceImpl implements TeacherMpService {
     
     @Autowired
     private TeacherMpMapper teacherMpMapper;
@@ -27,6 +29,7 @@ public class TeacherMpService {
     /**
      * 获取所有教师列表
      */
+    @Override
     public List<Map<String, Object>> getAllTeachers() {
         List<TeacherMp> teachers = teacherMpMapper.selectList(null);
         return convertTeachersToMap(teachers);
@@ -35,6 +38,7 @@ public class TeacherMpService {
     /**
      * 分页查询教师列表
      */
+    @Override
     public Map<String, Object> getTeachersByPage(int pageNum, int pageSize) {
         Page<TeacherMp> page = new Page<>(pageNum, pageSize);
         IPage<TeacherMp> teacherPage = teacherMpMapper.selectPage(page, 
@@ -53,6 +57,7 @@ public class TeacherMpService {
     /**
      * 根据条件查询教师
      */
+    @Override
     public List<Map<String, Object>> searchTeachers(String name, String dept, String title, Integer status) {
         LambdaQueryWrapper<TeacherMp> wrapper = new LambdaQueryWrapper<>();
         
@@ -76,6 +81,7 @@ public class TeacherMpService {
     /**
      * 根据ID获取教师详情
      */
+    @Override
     public Map<String, Object> getTeacherById(Long teacherId) {
         TeacherMp teacher = teacherMpMapper.selectById(teacherId);
         if (teacher != null) {
@@ -94,6 +100,7 @@ public class TeacherMpService {
     /**
      * 更新教师信息
      */
+    @Override
     public Map<String, Object> updateTeacher(Long teacherId, Map<String, Object> teacherData) {
         TeacherMp teacher = teacherMpMapper.selectById(teacherId);
         if (teacher != null) {
@@ -143,6 +150,7 @@ public class TeacherMpService {
     /**
      * 添加教师
      */
+    @Override
     public Map<String, Object> addTeacher(TeacherMp teacher) {
         try {
             int result = teacherMpMapper.insert(teacher);
@@ -169,6 +177,7 @@ public class TeacherMpService {
     /**
      * 删除教师
      */
+    @Override
     public Map<String, Object> deleteTeacher(Long teacherId) {
         try {
             int result = teacherMpMapper.deleteById(teacherId);
@@ -195,6 +204,7 @@ public class TeacherMpService {
     /**
      * 获取教师统计信息
      */
+    @Override
     public Map<String, Object> getTeacherStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         

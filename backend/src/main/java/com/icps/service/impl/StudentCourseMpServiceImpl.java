@@ -1,7 +1,9 @@
-package com.icps.service.mybatisplus;
+package com.icps.service.impl;
 
 import com.icps.entity.mybatisplus.StudentCourseMp;
 import com.icps.mapper.StudentCourseMpMapper;
+import com.icps.service.StudentCourseMpService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class StudentCourseMpService {
+public class StudentCourseMpServiceImpl implements StudentCourseMpService {
     
     @Autowired
     private StudentCourseMpMapper studentCourseMpMapper;
@@ -24,6 +26,7 @@ public class StudentCourseMpService {
     /**
      * 获取所有选课记录
      */
+    @Override
     public List<Map<String, Object>> getAllStudentCourses() {
         List<StudentCourseMp> studentCourses = studentCourseMpMapper.selectList(null);
         return convertStudentCoursesToMap(studentCourses);
@@ -32,6 +35,7 @@ public class StudentCourseMpService {
     /**
      * 根据学生身份证号查询选课记录
      */
+    @Override
     public List<Map<String, Object>> getCoursesByStudent(String stuCardNo) {
         List<StudentCourseMp> studentCourses = studentCourseMpMapper.selectByStuCardNo(stuCardNo);
         return convertStudentCoursesToMap(studentCourses);
@@ -40,6 +44,7 @@ public class StudentCourseMpService {
     /**
      * 根据课程ID查询选课记录
      */
+    @Override
     public List<Map<String, Object>> getStudentsByCourse(Long courseId) {
         List<StudentCourseMp> studentCourses = studentCourseMpMapper.selectByCourseId(courseId);
         return convertStudentCoursesToMap(studentCourses);
@@ -85,6 +90,7 @@ public class StudentCourseMpService {
     /**
      * 更新成绩
      */
+    @Override
     public Map<String, Object> updateGrade(Long id, Double grade, Double gradePoint) {
         StudentCourseMp studentCourse = studentCourseMpMapper.selectById(id);
         if (studentCourse != null) {
@@ -113,6 +119,7 @@ public class StudentCourseMpService {
     /**
      * 删除选课记录
      */
+    @Override
     public Map<String, Object> deleteStudentCourse(Long id) {
         try {
             int result = studentCourseMpMapper.deleteById(id);
@@ -139,6 +146,7 @@ public class StudentCourseMpService {
     /**
      * 获取选课统计信息
      */
+    @Override
     public Map<String, Object> getStudentCourseStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         

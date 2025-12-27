@@ -1,10 +1,12 @@
-package com.icps.service.mybatisplus;
+package com.icps.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icps.entity.mybatisplus.CourseMp;
 import com.icps.mapper.CourseMpMapper;
+import com.icps.service.CourseMpService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-public class CourseMpService {
+public class CourseMpServiceImpl implements CourseMpService {
     
     @Autowired
     private CourseMpMapper courseMpMapper;
@@ -27,6 +29,7 @@ public class CourseMpService {
     /**
      * 获取所有课程列表
      */
+    @Override
     public List<Map<String, Object>> getAllCourses() {
         List<CourseMp> courses = courseMpMapper.selectList(null);
         return convertCoursesToMap(courses);
@@ -35,6 +38,7 @@ public class CourseMpService {
     /**
      * 分页查询课程列表
      */
+    @Override
     public Map<String, Object> getCoursesByPage(int pageNum, int pageSize) {
         Page<CourseMp> page = new Page<>(pageNum, pageSize);
         IPage<CourseMp> coursePage = courseMpMapper.selectPage(page, 
@@ -53,6 +57,7 @@ public class CourseMpService {
     /**
      * 根据条件查询课程
      */
+    @Override
     public List<Map<String, Object>> searchCourses(String name, String teacherName, String semester, Integer status) {
         LambdaQueryWrapper<CourseMp> wrapper = new LambdaQueryWrapper<>();
         
@@ -76,6 +81,7 @@ public class CourseMpService {
     /**
      * 根据ID获取课程详情
      */
+    @Override
     public Map<String, Object> getCourseById(Long courseId) {
         CourseMp course = courseMpMapper.selectById(courseId);
         if (course != null) {
@@ -94,6 +100,7 @@ public class CourseMpService {
     /**
      * 更新课程信息
      */
+    @Override
     public Map<String, Object> updateCourse(Long courseId, Map<String, Object> courseData) {
         CourseMp course = courseMpMapper.selectById(courseId);
         if (course != null) {
@@ -158,6 +165,7 @@ public class CourseMpService {
     /**
      * 添加课程
      */
+    @Override
     public Map<String, Object> addCourse(CourseMp course) {
         try {
             int result = courseMpMapper.insert(course);
@@ -184,6 +192,7 @@ public class CourseMpService {
     /**
      * 删除课程
      */
+    @Override
     public Map<String, Object> deleteCourse(Long courseId) {
         try {
             int result = courseMpMapper.deleteById(courseId);
@@ -210,6 +219,7 @@ public class CourseMpService {
     /**
      * 获取课程统计信息
      */
+    @Override
     public Map<String, Object> getCourseStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         

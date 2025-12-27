@@ -1,11 +1,12 @@
-package com.icps.service.mybatisplus;
+package com.icps.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icps.entity.mybatisplus.StudentMp;
 import com.icps.mapper.StudentMpMapper;
-import lombok.extern.slf4j.Slf4j;
+import com.icps.service.StudentService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,30 +16,30 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 学生服务 - MyBatisPlus版本
+ * 学生服务
  */
-@Slf4j
 @Service
-public class StudentMpService {
+public class StudentServiceImpl implements StudentService {
     
     @Autowired
-    private StudentMpMapper studentMpMapper;
+    private StudentMpMapper studentMapper;
     
     /**
      * 获取所有学生列表
      */
+    @Override
     public List<Map<String, Object>> getAllStudents() {
-        List<StudentMp> students = studentMpMapper.selectList(null);
+        List<StudentMp> students = studentMapper.selectList(null);
         return convertStudentsToMap(students);
     }
     
     /**
      * 分页查询学生列表
      */
+    @Override
     public Map<String, Object> getStudentsByPage(int pageNum, int pageSize) {
         Page<StudentMp> page = new Page<>(pageNum, pageSize);
-        IPage<StudentMp> studentPage = studentMpMapper.selectPage(page, 
-            new LambdaQueryWrapper<StudentMp>().orderByDesc(StudentMp::getCreatedAt));
+        IPage<StudentMp> studentPage = studentMapper.selectPage(page, new QueryWrapper<StudentMp>().orderByDesc("created_at"));
         
         Map<String, Object> result = new HashMap<>();
         result.put("list", convertStudentsToMap(studentPage.getRecords()));
@@ -54,22 +55,22 @@ public class StudentMpService {
      * 根据条件查询学生
      */
     public List<Map<String, Object>> searchStudents(String name, String dept, String major, Integer sex) {
-        LambdaQueryWrapper<StudentMp> wrapper = new LambdaQueryWrapper<>();
+        QueryWrapper<StudentMp> queryWrapper = new QueryWrapper<>();
         
         if (name != null && !name.trim().isEmpty()) {
-            wrapper.like(StudentMp::getSname, name);
+            queryWrapper.like("sname", name);
         }
         if (dept != null && !dept.equals("0")) {
-            wrapper.eq(StudentMp::getStuDept, dept);
+            queryWrapper.eq("stu_dept", dept);
         }
         if (major != null && !major.equals("0")) {
-            wrapper.eq(StudentMp::getStuMajor, major);
+            queryWrapper.eq("stu_major", major);
         }
         if (sex != null && sex != 0) {
-            wrapper.eq(StudentMp::getSsex, sex);
+            queryWrapper.eq("ssex", sex);
         }
         
-        List<StudentMp> students = studentMpMapper.selectList(wrapper);
+        List<StudentMp> students = studentMapper.selectList(queryWrapper);
         return convertStudentsToMap(students);
     }
     
@@ -77,7 +78,7 @@ public class StudentMpService {
      * 根据ID获取学生详情
      */
     public Map<String, Object> getStudentById(String studentId) {
-        StudentMp student = studentMpMapper.selectById(studentId);
+        StudentMp student = studentMapper.selectById(studentId);
         if (student != null) {
             Map<String, Object> result = new HashMap<>();
             result.put("success", true);
@@ -95,9 +96,8 @@ public class StudentMpService {
      * 更新学生信息
      */
     public Map<String, Object> updateStudent(String studentId, Map<String, Object> studentData) {
-        StudentMp student = studentMpMapper.selectById(studentId);
+        StudentMp student = studentMapper.selectById(studentId);
         if (student != null) {
-            
             // 更新学生信息
             if (studentData.containsKey("sname")) {
                 student.setSname((String) studentData.get("sname"));
@@ -136,17 +136,12 @@ public class StudentMpService {
                 student.setRegion((String) studentData.get("region"));
             }
             
-            int result = studentMpMapper.updateById(student);
+            studentMapper.updateById(student);
             
-            Map<String, Object> response = new HashMap<>();
-            if (result > 0) {
-                response.put("success", true);
-                response.put("message", "学生信息更新成功");
-            } else {
-                response.put("success", false);
-                response.put("message", "学生信息更新失败");
-            }
-            return response;
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "学生信息更新成功");
+            return result;
         } else {
             Map<String, Object> result = new HashMap<>();
             result.put("success", false);
@@ -156,55 +151,26 @@ public class StudentMpService {
     }
     
     /**
-     * 添加学生
-     */
-    public Map<String, Object> addStudent(StudentMp student) {
-        try {
-            int result = studentMpMapper.insert(student);
-            
-            Map<String, Object> response = new HashMap<>();
-            if (result > 0) {
-                response.put("success", true);
-                response.put("message", "学生添加成功");
-            } else {
-                response.put("success", false);
-                response.put("message", "学生添加失败");
-            }
-            return response;
-        } catch (Exception e) {
-            log.error("添加学生失败: {}", e.getMessage());
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "学生添加失败: " + e.getMessage());
-            return response;
-        }
-    }
-    
-    /**
      * 删除学生
      */
     public Map<String, Object> deleteStudent(String studentId) {
+        Map<String, Object> result = new HashMap<>();
+        
         try {
-            int result = studentMpMapper.deleteById(studentId);
-            
-            Map<String, Object> response = new HashMap<>();
-            if (result > 0) {
-                response.put("success", true);
-                response.put("message", "学生删除成功");
+            int deleted = studentMapper.deleteById(studentId);
+            if (deleted > 0) {
+                result.put("success", true);
+                result.put("message", "学生删除成功");
             } else {
-                response.put("success", false);
-                response.put("message", "学生不存在或删除失败");
+                result.put("success", false);
+                result.put("message", "学生不存在");
             }
-            return response;
         } catch (Exception e) {
-            log.error("删除学生失败: {}", e.getMessage());
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "学生删除失败: " + e.getMessage());
-            return response;
+            result.put("success", false);
+            result.put("message", "删除学生失败: " + e.getMessage());
         }
+        
+        return result;
     }
     
     /**
@@ -214,11 +180,11 @@ public class StudentMpService {
         Map<String, Object> statistics = new HashMap<>();
         
         // 总学生数
-        long totalStudents = studentMpMapper.selectCount(null);
+        long totalStudents = studentMapper.countStudents();
         statistics.put("totalStudents", totalStudents);
         
         // 按学院统计
-        List<Map<String, Object>> deptStats = studentMpMapper.countByDepartment();
+        List<Map<String, Object>> deptStats = studentMapper.countByDepartment();
         Map<String, Long> deptCount = new HashMap<>();
         for (Map<String, Object> stat : deptStats) {
             deptCount.put((String) stat.get("stu_dept"), (Long) stat.get("count"));
