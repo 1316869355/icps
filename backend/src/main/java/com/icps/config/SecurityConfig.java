@@ -35,7 +35,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -62,7 +62,7 @@ public class SecurityConfig {
             // 配置请求授权
             .authorizeHttpRequests(authorize -> authorize
                 // 允许所有用户访问的接口
-                .antMatchers("/auth/login", "/auth/logout", "/auth/health").permitAll()
+                .antMatchers("/api/auth/login", "/api/auth/logout", "/api/auth/health").permitAll()
                 // 其他所有请求需要认证
                 .anyRequest().authenticated()
             )
