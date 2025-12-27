@@ -274,9 +274,14 @@ mybatis-plus:
 ```bash
 mvn clean package
 ```
+### 重新编译后再运行
+```bash
+
+cd d:/workspace/codebuddy/icps/backend && mvn spring-boot:run
+
+```
 
 ### 运行JAR包
-
 ```bash
 java -jar target/icps-backend-1.0.0.jar
 ```
