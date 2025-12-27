@@ -85,6 +85,21 @@ spring:
 
 ### 运行应用
 
+#### 方式一：使用已编译的JAR包（推荐）
+
+1. 确保项目已编译（已有JAR包在target目录）：
+```bash
+# 如果没有JAR包，先编译
+mvn clean package -DskipTests
+```
+
+2. 直接运行JAR包：
+```bash
+java -jar target/icps-backend-1.0.0.jar
+```
+
+#### 方式二：使用Maven运行
+
 1. 克隆项目并进入backend目录：
 ```bash
 cd backend
@@ -105,7 +120,45 @@ mvn spring-boot:run
 mvn exec:java -Dexec.mainClass="com.icps.IcpsApplication"
 ```
 
-应用启动后，访问：http://localhost:8081/api
+#### 成功启动标识
+
+应用启动成功后，会看到类似以下输出：
+```
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.0)
+
+...
+2025-12-27 22:xx:xx.xxx  INFO 12345 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path '/api'
+2025-12-27 22:xx:xx.xxx  INFO 12345 --- [           main] com.icps.IcpsApplication                 : Started IcpsApplication in 3.456 seconds (process running for 5.123)
+```
+
+#### 访问地址
+
+应用启动后，访问：
+- **API根路径**: http://localhost:8081/api
+- **健康检查**: http://localhost:8081/api/actuator/health
+- **API文档**: http://localhost:8081/api/actuator
+
+#### 快速启动命令（Windows PowerShell）
+
+```powershell
+# 切换到后端目录
+cd "d:\workspace\codebuddy\icps\backend"
+
+# 直接运行已编译的JAR包
+java -jar target/icps-backend-1.0.0.jar
+```
+
+#### 环境要求确认
+
+- Java 8+ （当前系统: Java 1.8.0_92）
+- MySQL 8.0+ （需确保服务运行）
+- Maven 3.6+ （当前系统: Maven 3.6.3）
 
 ### MyBatis-Plus特性
 

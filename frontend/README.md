@@ -74,7 +74,42 @@ npm install
 ```bash
 npm run dev
 ```
-项目将在 http://localhost:3000 启动
+
+#### 成功启动标识
+
+项目启动成功后，会看到类似以下输出：
+```
+  VITE v4.4.5  ready in 345 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://192.168.x.x:3000/
+  ➜  press h to show help
+```
+
+#### 访问地址
+
+- **前端应用**: http://localhost:3000
+- **API代理**: `/api` 请求自动代理到 http://localhost:8081/api
+
+#### 快速启动命令（Windows PowerShell）
+
+```powershell
+# 切换到前端目录
+cd "d:\workspace\codebuddy\icps\frontend"
+
+# 安装依赖（首次运行）
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+#### 环境配置确认
+
+- **Node.js 版本**: v22.21.1 ✅
+- **npm 版本**: 11.7.0 ✅
+- **端口**: 3000 （可在vite.config.js中修改）
+- **代理配置**: `/api` -> `http://localhost:8081/api` ✅
 
 ### 生产构建
 ```bash
@@ -86,6 +121,25 @@ npm run build
 ```bash
 npm run preview
 ```
+
+### 其他可用命令
+```bash
+# 在指定端口预览构建结果
+npm run serve
+```
+
+#### 启动注意事项
+
+1. **首次运行**: 确保先执行 `npm install` 安装依赖
+2. **端口占用**: 如果3000端口被占用，Vite会自动分配其他端口
+3. **后端依赖**: 前端运行需要后端API服务支持（通常在8081端口）
+4. **代理配置**: 已配置API代理，无需手动处理跨域问题
+
+#### 故障排除
+
+- **依赖安装失败**: 尝试删除 `node_modules` 和 `package-lock.json`，重新安装
+- **端口冲突**: 修改 `vite.config.js` 中的 `server.port` 配置
+- **API请求失败**: 确认后端服务已启动并运行在正确端口
 
 ## 配置说明
 
