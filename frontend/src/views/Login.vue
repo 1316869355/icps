@@ -112,9 +112,8 @@ const handleLogin = async () => {
     if (result.success) {
       ElMessage.success('登录成功')
       
-      // 根据角色跳转到不同页面
-      const redirectPath = loginForm.role === UserRole.STUDENT ? '/student' : '/teacher'
-      router.push(redirectPath)
+      // 登录成功后跳转到仪表盘
+      router.push('/dashboard')
     } else {
       ElMessage.error(result.message || '登录失败')
     }

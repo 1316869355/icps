@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // 页面组件
 const Login = () => import('@/views/Login.vue')
-const Student = () => import('@/views/Student.vue')
+const Dashboard = () => import('@/views/Dashboard.vue')
 const StudentInfo = () => import('@/views/student/Info.vue')
 const StudentGrades = () => import('@/views/student/Grades.vue')
 const StudentCourses = () => import('@/views/student/Courses.vue')
@@ -19,33 +19,30 @@ const routes = [
     component: Login,
     meta: { requiresAuth: false }
   },
-  // 学生路由
   {
-    path: '/student',
-    name: 'Student',
-    component: Student,
-    meta: { requiresAuth: true, role: 'student' },
-    redirect: '/student/info',
-    children: [
-      {
-        path: 'info',
-        name: 'StudentInfo',
-        component: StudentInfo,
-        meta: { requiresAuth: true, role: 'student' }
-      },
-      {
-        path: 'grades',
-        name: 'StudentGrades',
-        component: StudentGrades,
-        meta: { requiresAuth: true, role: 'student' }
-      },
-      {
-        path: 'courses',
-        name: 'StudentCourses',
-        component: StudentCourses,
-        meta: { requiresAuth: true, role: 'student' }
-      }
-    ]
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true }
+  },
+  // 学生路由 - 直接使用子路由，避免重复布局
+  {
+    path: '/student/info',
+    name: 'StudentInfo',
+    component: StudentInfo,
+    meta: { requiresAuth: true, role: 'student' }
+  },
+  {
+    path: '/student/grades',
+    name: 'StudentGrades',
+    component: StudentGrades,
+    meta: { requiresAuth: true, role: 'student' }
+  },
+  {
+    path: '/student/courses',
+    name: 'StudentCourses',
+    component: StudentCourses,
+    meta: { requiresAuth: true, role: 'student' }
   }
 ]
 
@@ -77,14 +74,7 @@ router.beforeEach((to, from, next) => {
   
   // 如果已登录且访问登录页，根据角色重定向到对应页面
   if (to.path === '/login' && authStore.isLoggedIn) {
-    if (authStore.userRole === 'student') {
-      next('/student')
-    } else if (authStore.userRole === 'teacher') {
-      // 后续可添加教师页面
-      next('/student')
-    } else {
-      next('/student')
-    }
+    next('/dashboard')
     return
   }
   
