@@ -1,5 +1,6 @@
 package com.icps.controller;
 
+import com.icps.aspect.Log;
 import com.icps.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ public class AuthController {
     private AuthService authService;
     
     @PostMapping("/login")
+    @Log(value = "用户登录接口", printParams = true, printResult = true, printExecutionTime = true)
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
         String userName = loginRequest.get("username");
         String cardNo = loginRequest.get("password");
@@ -56,6 +58,7 @@ public class AuthController {
     }
     
     @PostMapping("/logout")
+    @Log(value = "用户退出登录接口", printParams = false, printResult = true, printExecutionTime = true)
     public ResponseEntity<Map<String, Object>> logout() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -64,6 +67,7 @@ public class AuthController {
     }
     
     @GetMapping("/health")
+    @Log(value = "健康检查接口", printParams = false, printResult = true, printExecutionTime = true)
     public ResponseEntity<Map<String, Object>> healthCheck() {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "UP");

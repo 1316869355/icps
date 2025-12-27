@@ -95,6 +95,12 @@
             <version>3.5.3.1</version>
         </dependency>
         
+        <!-- Spring Boot Starter AOP (用于切面编程) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        
         <!-- MyBatis Plus Generator -->
         <dependency>
             <groupId>com.baomidou</groupId>
