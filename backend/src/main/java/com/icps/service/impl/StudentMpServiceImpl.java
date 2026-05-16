@@ -65,10 +65,10 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
         if (name != null && !name.trim().isEmpty()) {
             wrapper.like(StudentMp::getSname, name);
         }
-        if (dept != null && !dept.equals("0")) {
+        if (!"0".equals(dept)) {
             wrapper.eq(StudentMp::getStuDept, dept);
         }
-        if (major != null && !major.equals("0")) {
+        if (!"0".equals(major)) {
             wrapper.eq(StudentMp::getStuMajor, major);
         }
         if (sex != null && sex != 0) {
@@ -84,16 +84,25 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
      */
     @Override
     public Map<String, Object> getStudentById(String studentId) {
-        StudentMp student = studentMpMapper.selectById(studentId);
-        if (student != null) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("student", convertStudentToMap(student));
-            return result;
-        } else {
+        try {
+            Long userId = Long.parseLong(studentId);
+            StudentMp student = studentMpMapper.selectByUserId(userId);
+            if (student != null) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("success", true);
+                result.put("student", convertStudentToMap(student));
+                return result;
+            } else {
+                Map<String, Object> result = new HashMap<>();
+                result.put("success", false);
+                result.put("message", "学生不存在");
+                return result;
+            }
+        } catch (NumberFormatException e) {
+            log.error("无效的学生ID格式: {}", studentId);
             Map<String, Object> result = new HashMap<>();
             result.put("success", false);
-            result.put("message", "学生不存在");
+            result.put("message", "无效的学生ID格式");
             return result;
         }
     }

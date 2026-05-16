@@ -58,11 +58,13 @@ public class AuthServiceImpl implements AuthService {
                 Map<String, Object> userMap = null;
                 UserMp user = userMpService.getOne(Wrappers.<UserMp>lambdaQuery()
                         .eq(UserMp::getUsername, username));
-                if ("student".equals(user.getRole())) {
-                    StudentMp student = studentMapper.selectById(user.getUserId());
+                // 使用数据库中的实际角色，而非前端传入的role
+                String actualRole = user.getRole();
+                if ("student".equals(actualRole)) {
+                    StudentMp student = studentMapper.selectByUserId(user.getUserId());
                     userMap = studentMpService.convertStudentToMap(student);
-                } else if ("teacher".equals(user.getRole())) {
-                    TeacherMp teacher = teacherMapper.selectById(user.getUserId());
+                } else if ("teacher".equals(actualRole)) {
+                    TeacherMp teacher = teacherMapper.selectByUserId(user.getUserId());
                     userMap = teacherMpService.convertTeacherToMap(teacher);
                 } else {
                     userMap = userMpService.convertUserToMap(user);
@@ -70,9 +72,9 @@ public class AuthServiceImpl implements AuthService {
                 if (userMap != null) {
                     result.put("success", true);
                     result.put("message", "登录成功");
-                    result.put("role", role);
+                    result.put("role", actualRole);
                     result.put("user", userMap);
-                    result.put("token", generateToken(userMap.get("userId").toString(), role));
+                    result.put("token", generateToken(userMap.get("userId").toString(), actualRole));
                 } else {
                     result.put("success", false);
                     result.put("message", "信息不存在");
@@ -84,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             log.error("登录过程中发生错误: ", e);
             result.put("success", false);
-            result.put("message", "登录过程中发生错误: " + e.getMessage());
+            result.put("message", "登录过程中发生错误");
         }
         
         return result;
@@ -99,8 +101,9 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> result = new HashMap<>();
         
         try {
+            Long userIdLong = Long.parseLong(userId);
             if ("student".equals(role)) {
-                StudentMp student = studentMapper.selectById(userId);
+                StudentMp student = studentMapper.selectByUserId(userIdLong);
                 if (student != null) {
                     result.put("success", true);
                     result.put("user", studentMpService.convertStudentToMap(student));
@@ -109,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
                     result.put("message", "学生信息不存在");
                 }
             } else if ("teacher".equals(role)) {
-                TeacherMp teacher = teacherMapper.selectByUserId(Long.parseLong(userId));
+                TeacherMp teacher = teacherMapper.selectByUserId(userIdLong);
                 if (teacher != null) {
                     result.put("success", true);
                     result.put("user", teacherMpService.convertTeacherToMap(teacher));
@@ -121,9 +124,12 @@ public class AuthServiceImpl implements AuthService {
                 result.put("success", false);
                 result.put("message", "无效的角色类型");
             }
+        } catch (NumberFormatException e) {
+            result.put("success", false);
+            result.put("message", "无效的用户ID格式");
         } catch (Exception e) {
             result.put("success", false);
-            result.put("message", "获取用户信息失败: " + e.getMessage());
+            result.put("message", "获取用户信息失败");
         }
         
         return result;
