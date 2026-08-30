@@ -55,6 +55,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- H2 内存数据库（仅测试用，版本由 Spring Boot 父 POM 管理） -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
         
         <!-- JSON Processing -->
         <dependency>

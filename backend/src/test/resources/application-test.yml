@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:icpstest;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ''
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-h2.sql
+      data-locations: classpath:data-h2.sql
+      continue-on-error: false
+      # 种子脚本含中文，必须显式指定 UTF-8，否则会按平台默认编码读入导致乱码
+      encoding: UTF-8
+
+  # 测试环境不走 Flyway，使用上面的 schema-h2.sql 建表
+  flyway:
+    enabled: false
+
+  # 关闭纯 JPA/Hibernate 相关推断，本项目不使用
+  jpa:
+    open-in-view: false
+
+logging:
+  level:
+    root: WARN
+    com.icps: INFO
+    org.springframework.security: WARN
