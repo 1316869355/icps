@@ -1,5 +1,6 @@
 package com.icps.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icps.entity.UserMp;
 import com.icps.mapper.UserMpMapper;
@@ -52,6 +53,25 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
     }
 
     /**
+     * 根据用户名查询用户实体
+     */
+    @Override
+    public UserMp getByUsername(String username) {
+        return userMpMapper.selectByUsername(username);
+    }
+
+    /**
+     * 明文密码与BCrypt密文比对
+     */
+    @Override
+    public boolean matchesPassword(String rawPassword, String encodedPassword) {
+        if (rawPassword == null || encodedPassword == null) {
+            return false;
+        }
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    /**
      * 根据角色查询用户
      */
     @Override
@@ -80,29 +100,17 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
     }
     
     /**
-     * 用户登录验证
+     * 更新最后登录时间
      */
     @Override
-    public Map<String, Object> login(String username, String password) {
-        boolean isValid = userMpMapper.validateLogin(username, password);
-        
-        Map<String, Object> result = new HashMap<>();
-        if (isValid) {
-            // 更新最后登录时间
-            UserMp user = userMpMapper.selectByUsername(username);
-            if (user != null) {
-                user.setLastLogin(LocalDateTime.now());
-                userMpMapper.updateById(user);
-            }
-            
-            result.put("success", true);
-            result.put("message", "登录成功");
-            result.put("user", convertUserToMap(user));
-        } else {
-            result.put("success", false);
-            result.put("message", "用户名或密码错误");
+    public void updateLastLogin(Long userId) {
+        if (userId == null) {
+            return;
         }
-        return result;
+        // 只更新 last_login 一列，避免实体字段默认值（如 role 默认 student）被一并写回
+        userMpMapper.update(null, new LambdaUpdateWrapper<UserMp>()
+                .eq(UserMp::getUserId, userId)
+                .set(UserMp::getLastLogin, LocalDateTime.now()));
     }
     
     /**

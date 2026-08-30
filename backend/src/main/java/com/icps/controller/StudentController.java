@@ -1,12 +1,14 @@
 package com.icps.controller;
 
-import com.icps.service.StudentService;
+import com.icps.entity.StudentMp;
+import com.icps.service.StudentMpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,7 +17,7 @@ import java.util.Map;
 public class StudentController {
     
     @Autowired
-    private StudentService studentService;
+    private StudentMpService studentService;
     
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllStudents(
@@ -25,12 +27,12 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService的分页查询功能
             Map<String, Object> pageResult = studentService.getStudentsByPage(page, size);
             
             response.put("success", true);
             response.put("data", pageResult.get("list"));
             response.put("currentPage", page);
+            response.put("page", page);
             response.put("pageSize", size);
             response.put("total", pageResult.get("total"));
             response.put("totalPages", pageResult.get("totalPages"));
@@ -43,12 +45,14 @@ public class StudentController {
         }
     }
     
+    /**
+     * 学生详情：支持用户ID、学号、身份证号
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getStudentById(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService获取学生详情
             Map<String, Object> studentResult = studentService.getStudentById(id);
             
             if (Boolean.TRUE.equals(studentResult.get("success"))) {
@@ -77,8 +81,7 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService进行条件查询
-            java.util.List<Map<String, Object>> students = studentService.searchStudents(name, dept, major, sex);
+            List<Map<String, Object>> students = studentService.searchStudents(name, dept, major, sex);
             response.put("success", true);
             response.put("data", students);
             response.put("total", students.size());
@@ -86,6 +89,23 @@ public class StudentController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "搜索学生失败");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 新增学生
+     */
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> addStudent(@RequestBody StudentMp student) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Object> result = studentService.addStudent(student);
+            return ResponseEntity.status(Boolean.TRUE.equals(result.get("success"))
+                    ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST).body(result);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "新增学生失败");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -97,7 +117,6 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService更新学生信息
             Map<String, Object> updateResult = studentService.updateStudent(id, studentData);
             
             if (Boolean.TRUE.equals(updateResult.get("success"))) {
@@ -121,7 +140,6 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService删除学生
             Map<String, Object> deleteResult = studentService.deleteStudent(id);
             
             if (Boolean.TRUE.equals(deleteResult.get("success"))) {
@@ -145,7 +163,6 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            // 使用StudentService获取学生统计信息
             Map<String, Object> statistics = studentService.getStudentStatistics();
             response.put("success", true);
             response.put("count", statistics.get("totalStudents"));
@@ -153,6 +170,23 @@ public class StudentController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "获取学生总数失败");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * 学生统计信息
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getStudentStatistics() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            response.put("success", true);
+            response.put("data", studentService.getStudentStatistics());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "获取学生统计失败");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

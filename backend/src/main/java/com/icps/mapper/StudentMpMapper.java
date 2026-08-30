@@ -27,61 +27,61 @@ public interface StudentMpMapper extends BaseMapper<StudentMp> {
     /**
      * 根据学号查找学生
      */
-    @Select("SELECT * FROM icps_stu WHERE sno = #{sno}")
+    @Select("SELECT * FROM icps_stu WHERE sno = #{sno} AND deleted = 0")
     StudentMp selectBySno(@Param("sno") String sno);
     
     /**
      * 根据姓名模糊查询
      */
-    @Select("SELECT * FROM icps_stu WHERE sname LIKE CONCAT('%', #{name}, '%')")
+    @Select("SELECT * FROM icps_stu WHERE sname LIKE CONCAT('%', #{name}, '%') AND deleted = 0")
     List<StudentMp> selectBySnameLike(@Param("name") String name);
     
     /**
      * 根据学院查询
      */
-    @Select("SELECT * FROM icps_stu WHERE stu_dept = #{dept}")
+    @Select("SELECT * FROM icps_stu WHERE stu_dept = #{dept} AND deleted = 0")
     List<StudentMp> selectByDept(@Param("dept") String dept);
     
     /**
      * 根据专业查询
      */
-    @Select("SELECT * FROM icps_stu WHERE stu_major = #{major}")
+    @Select("SELECT * FROM icps_stu WHERE stu_major = #{major} AND deleted = 0")
     List<StudentMp> selectByMajor(@Param("major") String major);
     
     /**
      * 根据班级查询
      */
-    @Select("SELECT * FROM icps_stu WHERE stu_clazz = #{clazz}")
+    @Select("SELECT * FROM icps_stu WHERE stu_clazz = #{clazz} AND deleted = 0")
     List<StudentMp> selectByClazz(@Param("clazz") String clazz);
     
     /**
      * 根据性别查询
      */
-    @Select("SELECT * FROM icps_stu WHERE ssex = #{sex}")
+    @Select("SELECT * FROM icps_stu WHERE ssex = #{sex} AND deleted = 0")
     List<StudentMp> selectBySex(@Param("sex") Integer sex);
     
     /**
      * 学生登录验证
      */
-    @Select("SELECT COUNT(*) > 0 FROM icps_stu WHERE stu_card_no = #{cardNo} AND sname LIKE CONCAT('%', #{name}, '%')")
+    @Select("SELECT COUNT(*) > 0 FROM icps_stu WHERE stu_card_no = #{cardNo} AND sname LIKE CONCAT('%', #{name}, '%') AND deleted = 0")
     boolean existsByCardNoAndName(@Param("cardNo") String cardNo, @Param("name") String name);
     
     /**
      * 统计学生总数
      */
-    @Select("SELECT COUNT(*) FROM icps_stu")
+    @Select("SELECT COUNT(*) FROM icps_stu WHERE deleted = 0")
     long countStudents();
     
     /**
      * 按学院统计学生数量
      */
-    @Select("SELECT stu_dept, COUNT(*) as count FROM icps_stu GROUP BY stu_dept")
+    @Select("SELECT stu_dept, COUNT(*) as count FROM icps_stu WHERE deleted = 0 GROUP BY stu_dept")
     List<Map<String, Object>> countByDepartment();
     
     /**
      * 分页查询学生列表
      */
-    @Select("SELECT * FROM icps_stu ORDER BY created_at DESC")
+    @Select("SELECT * FROM icps_stu WHERE deleted = 0 ORDER BY created_at DESC")
     IPage<StudentMp> selectPageByCondition(Page<StudentMp> page, 
                                            @Param("name") String name, 
                                            @Param("dept") String dept,

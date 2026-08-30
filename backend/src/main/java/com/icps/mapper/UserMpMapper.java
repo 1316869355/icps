@@ -29,20 +29,14 @@ public interface UserMpMapper extends BaseMapper<UserMp> {
     List<UserMp> selectByRole(@Param("role") String role);
 
     /**
-     * 验证用户登录
-     */
-    @Select("SELECT COUNT(*) > 0 FROM icps_user WHERE username = #{username} AND password = #{password} AND deleted = 0")
-    boolean validateLogin(@Param("username") String username, @Param("password") String password);
-    
-    /**
      * 统计用户总数
      */
-    @Select("SELECT COUNT(*) FROM icps_user")
+    @Select("SELECT COUNT(*) FROM icps_user WHERE deleted = 0")
     long countUsers();
     
     /**
      * 按角色统计用户数量
      */
-    @Select("SELECT role, COUNT(*) as count FROM icps_user GROUP BY role")
+    @Select("SELECT role, COUNT(*) as count FROM icps_user WHERE deleted = 0 GROUP BY role")
     List<Map<String, Object>> countByRole();
 }

@@ -72,22 +72,22 @@ public class StudentMp {
     private String shbt;
     
     /**
-     * 血型
+     * 血型（字段名为列名的驼峰形式，MyBatis 原生 @Select 才能自动映射）
      */
     @TableField("sblood")
-    private String sbloodType;
+    private String sblood;
     
     /**
      * 星座
      */
     @TableField("start_sign")
-    private String sstartSign;
+    private String startSign;
     
     /**
      * 评估结果
      */
     @TableField("evaluated_type")
-    private String sevaledType;
+    private String evaluatedType;
     
     /**
      * 学院

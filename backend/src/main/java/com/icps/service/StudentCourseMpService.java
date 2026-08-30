@@ -44,4 +44,24 @@ public interface StudentCourseMpService {
      * 获取选课统计信息
      */
     Map<String, Object> getStudentCourseStatistics();
+
+    /**
+     * 选课（同步课程已选人数）
+     */
+    Map<String, Object> selectCourse(String stuCardNo, Long courseId);
+
+    /**
+     * 退课（同步课程已选人数）
+     */
+    Map<String, Object> dropCourse(String stuCardNo, Long courseId);
+
+    /**
+     * 查询学生成绩明细（关联课程信息）
+     */
+    List<Map<String, Object>> getGradeDetails(String stuCardNo);
+
+    /**
+     * 查询某门课程的成绩明细（关联学生信息）
+     */
+    List<Map<String, Object>> getCourseGradeDetails(Long courseId);
 }

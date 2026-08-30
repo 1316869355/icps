@@ -55,5 +55,29 @@ public interface StudentMpService extends IService<StudentMp> {
      * 转换单个学生实体为Map
      */
     Map<String, Object> convertStudentToMap(StudentMp student);
-    
+
+    /**
+     * 根据用户ID查询学生（自动过滤逻辑删除）
+     */
+    StudentMp getByUserId(Long userId);
+
+    /**
+     * 根据学号查询学生
+     */
+    StudentMp getBySno(String sno);
+
+    /**
+     * 根据身份证号查询学生
+     */
+    StudentMp getByCardNo(String cardNo);
+
+    /**
+     * 根据用户ID更新学生信息
+     */
+    Map<String, Object> updateStudentByUserId(Long userId, Map<String, Object> studentData);
+
+    /**
+     * 根据用户ID逻辑删除学生
+     */
+    Map<String, Object> deleteStudentByUserId(Long userId);
 }

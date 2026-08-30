@@ -49,4 +49,9 @@ public interface CourseMpService {
      * 获取课程统计信息
      */
     public Map<String, Object> getCourseStatistics();
+
+    /**
+     * 按选课记录重算所有课程的已选人数
+     */
+    public Map<String, Object> syncEnrolled();
 }

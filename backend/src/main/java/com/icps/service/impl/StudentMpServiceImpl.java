@@ -65,10 +65,10 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
         if (name != null && !name.trim().isEmpty()) {
             wrapper.like(StudentMp::getSname, name);
         }
-        if (!"0".equals(dept)) {
+        if (dept != null && !dept.trim().isEmpty() && !"0".equals(dept)) {
             wrapper.eq(StudentMp::getStuDept, dept);
         }
-        if (!"0".equals(major)) {
+        if (major != null && !major.trim().isEmpty() && !"0".equals(major)) {
             wrapper.eq(StudentMp::getStuMajor, major);
         }
         if (sex != null && sex != 0) {
@@ -85,8 +85,7 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
     @Override
     public Map<String, Object> getStudentById(String studentId) {
         try {
-            Long userId = Long.parseLong(studentId);
-            StudentMp student = studentMpMapper.selectByUserId(userId);
+            StudentMp student = resolveStudent(studentId);
             if (student != null) {
                 Map<String, Object> result = new HashMap<>();
                 result.put("success", true);
@@ -98,8 +97,8 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
                 result.put("message", "学生不存在");
                 return result;
             }
-        } catch (NumberFormatException e) {
-            log.error("无效的学生ID格式: {}", studentId);
+        } catch (Exception e) {
+            log.error("查询学生详情失败: {}", studentId, e);
             Map<String, Object> result = new HashMap<>();
             result.put("success", false);
             result.put("message", "无效的学生ID格式");
@@ -108,11 +107,55 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
     }
     
     /**
+     * 根据用户ID查询学生
+     */
+    @Override
+    public StudentMp getByUserId(Long userId) {
+        return userId == null ? null : studentMpMapper.selectByUserId(userId);
+    }
+
+    /**
+     * 根据学号查询学生
+     */
+    @Override
+    public StudentMp getBySno(String sno) {
+        return sno == null ? null : studentMpMapper.selectBySno(sno);
+    }
+
+    /**
+     * 根据身份证号查询学生
+     */
+    @Override
+    public StudentMp getByCardNo(String cardNo) {
+        if (cardNo == null) {
+            return null;
+        }
+        return studentMpMapper.selectOne(new LambdaQueryWrapper<StudentMp>()
+                .eq(StudentMp::getStuCardNo, cardNo));
+    }
+
+    /**
+     * 根据用户ID更新学生信息
+     */
+    @Override
+    public Map<String, Object> updateStudentByUserId(Long userId, Map<String, Object> studentData) {
+        return updateStudent(String.valueOf(userId), studentData);
+    }
+
+    /**
+     * 根据用户ID逻辑删除学生
+     */
+    @Override
+    public Map<String, Object> deleteStudentByUserId(Long userId) {
+        return deleteStudent(String.valueOf(userId));
+    }
+
+    /**
      * 更新学生信息
      */
     @Override
     public Map<String, Object> updateStudent(String studentId, Map<String, Object> studentData) {
-        StudentMp student = studentMpMapper.selectById(studentId);
+        StudentMp student = resolveStudent(studentId);
         if (student != null) {
             
             // 更新学生信息
@@ -131,14 +174,14 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
             if (studentData.containsKey("shbt")) {
                 student.setShbt((String) studentData.get("shbt"));
             }
-            if (studentData.containsKey("sbloodType")) {
-                student.setSbloodType((String) studentData.get("sbloodType"));
+            if (studentData.containsKey("bloodType")) {
+                student.setSblood((String) studentData.get("bloodType"));
             }
-            if (studentData.containsKey("sstartSign")) {
-                student.setSstartSign((String) studentData.get("sstartSign"));
+            if (studentData.containsKey("zodiac")) {
+                student.setStartSign((String) studentData.get("zodiac"));
             }
-            if (studentData.containsKey("sevaledType")) {
-                student.setSevaledType((String) studentData.get("sevaledType"));
+            if (studentData.containsKey("evaluation")) {
+                student.setEvaluatedType((String) studentData.get("evaluation"));
             }
             if (studentData.containsKey("stuDept")) {
                 student.setStuDept((String) studentData.get("stuDept"));
@@ -200,12 +243,36 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
     }
     
     /**
+     * 解析学生标识：纯数字按 user_id 解析，否则依次按学号、身份证号解析
+     */
+    private StudentMp resolveStudent(String studentId) {
+        if (studentId == null || studentId.trim().isEmpty()) {
+            return null;
+        }
+        if (studentId.matches("\\d+")) {
+            StudentMp student = studentMpMapper.selectByUserId(Long.parseLong(studentId));
+            if (student != null) {
+                return student;
+            }
+        }
+        StudentMp student = studentMpMapper.selectBySno(studentId);
+        return student != null ? student : getByCardNo(studentId);
+    }
+
+    /**
      * 删除学生
      */
     @Override
     public Map<String, Object> deleteStudent(String studentId) {
         try {
-            int result = studentMpMapper.deleteById(studentId);
+            StudentMp target = resolveStudent(studentId);
+            if (target == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "学生不存在或删除失败");
+                return response;
+            }
+            int result = studentMpMapper.deleteById(target.getUserId());
             
             Map<String, Object> response = new HashMap<>();
             if (result > 0) {
@@ -268,14 +335,14 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
         studentMap.put("userId", student.getUserId());
         studentMap.put("studentId", student.getSno());
         studentMap.put("name", student.getSname());
-        studentMap.put("gender", student.getSsex() == 1 ? "男" : "女");
+        studentMap.put("gender", Integer.valueOf(1).equals(student.getSsex()) ? "男" : "女");
         studentMap.put("age", student.getSage());
         studentMap.put("cardNo", student.getStuCardNo());
         studentMap.put("address", student.getStuAddress());
         studentMap.put("hobby", student.getShbt());
-        studentMap.put("bloodType", student.getSbloodType());
-        studentMap.put("zodiac", student.getSstartSign());
-        studentMap.put("evaluation", student.getSevaledType());
+        studentMap.put("bloodType", student.getSblood());
+        studentMap.put("zodiac", student.getStartSign());
+        studentMap.put("evaluation", student.getEvaluatedType());
         studentMap.put("department", student.getStuDept());
         studentMap.put("major", student.getStuMajor());
         studentMap.put("clazz", student.getStuClazz());

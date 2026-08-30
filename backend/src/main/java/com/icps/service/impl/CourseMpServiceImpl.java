@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icps.entity.CourseMp;
 import com.icps.mapper.CourseMpMapper;
+import com.icps.mapper.StudentCourseMpMapper;
 import com.icps.service.CourseMpService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,9 @@ public class CourseMpServiceImpl implements CourseMpService {
     
     @Autowired
     private CourseMpMapper courseMpMapper;
+
+    @Autowired
+    private StudentCourseMpMapper studentCourseMpMapper;
     
     /**
      * 获取所有课程列表
@@ -246,6 +250,40 @@ public class CourseMpServiceImpl implements CourseMpService {
         return statistics;
     }
     
+    /**
+     * 按选课记录重算所有课程的已选人数
+     */
+    @Override
+    public Map<String, Object> syncEnrolled() {
+        Map<String, Object> result = new HashMap<>();
+
+        Map<Long, Long> enrolledMap = new HashMap<>();
+        for (Map<String, Object> row : studentCourseMpMapper.countStudentsByCourse()) {
+            Object courseId = row.get("course_id");
+            Object count = row.get("count");
+            if (courseId != null && count != null) {
+                enrolledMap.put(((Number) courseId).longValue(), ((Number) count).longValue());
+            }
+        }
+
+        int updated = 0;
+        for (CourseMp course : courseMpMapper.selectList(null)) {
+            int actual = enrolledMap.getOrDefault(course.getCourseId(), 0L).intValue();
+            int current = course.getEnrolled() == null ? 0 : course.getEnrolled();
+            if (current != actual) {
+                course.setEnrolled(actual);
+                courseMpMapper.updateById(course);
+                updated++;
+            }
+        }
+
+        result.put("success", true);
+        result.put("message", "已选人数同步完成");
+        result.put("updated", updated);
+        result.put("total", enrolledMap.size());
+        return result;
+    }
+
     /**
      * 转换课程列表为Map列表
      */

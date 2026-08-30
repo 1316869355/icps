@@ -27,61 +27,61 @@ public interface TeacherMpMapper extends BaseMapper<TeacherMp> {
     /**
      * 根据身份证号查找教师
      */
-    @Select("SELECT * FROM icps_teacher WHERE teacher_card_no = #{cardNo}")
+    @Select("SELECT * FROM icps_teacher WHERE teacher_card_no = #{cardNo} AND deleted = 0")
     TeacherMp selectByCardNo(@Param("cardNo") String cardNo);
     
     /**
      * 教师登录验证
      */
-    @Select("SELECT COUNT(*) > 0 FROM icps_teacher WHERE teacher_card_no = #{cardNo} AND teacher_name LIKE CONCAT('%', #{name}, '%')")
+    @Select("SELECT COUNT(*) > 0 FROM icps_teacher WHERE teacher_card_no = #{cardNo} AND teacher_name LIKE CONCAT('%', #{name}, '%') AND deleted = 0")
     boolean existsByCardNoAndName(@Param("cardNo") String cardNo, @Param("name") String name);
     
     /**
      * 根据姓名模糊查询
      */
-    @Select("SELECT * FROM icps_teacher WHERE teacher_name LIKE CONCAT('%', #{name}, '%')")
+    @Select("SELECT * FROM icps_teacher WHERE teacher_name LIKE CONCAT('%', #{name}, '%') AND deleted = 0")
     List<TeacherMp> selectByNameLike(@Param("name") String name);
     
     /**
      * 根据学院查询
      */
-    @Select("SELECT * FROM icps_teacher WHERE dept = #{dept}")
+    @Select("SELECT * FROM icps_teacher WHERE dept = #{dept} AND deleted = 0")
     List<TeacherMp> selectByDept(@Param("dept") String dept);
     
     /**
      * 根据职称查询
      */
-    @Select("SELECT * FROM icps_teacher WHERE title = #{title}")
+    @Select("SELECT * FROM icps_teacher WHERE title = #{title} AND deleted = 0")
     List<TeacherMp> selectByTitle(@Param("title") String title);
     
     /**
      * 根据状态查询教师
      */
-    @Select("SELECT * FROM icps_teacher WHERE status = #{status}")
+    @Select("SELECT * FROM icps_teacher WHERE status = #{status} AND deleted = 0")
     List<TeacherMp> selectByStatus(@Param("status") Integer status);
     
     /**
      * 统计教师总数
      */
-    @Select("SELECT COUNT(*) FROM icps_teacher")
+    @Select("SELECT COUNT(*) FROM icps_teacher WHERE deleted = 0")
     long countTeachers();
     
     /**
      * 按学院统计教师数量
      */
-    @Select("SELECT dept, COUNT(*) as count FROM icps_teacher GROUP BY dept")
+    @Select("SELECT dept, COUNT(*) as count FROM icps_teacher WHERE deleted = 0 GROUP BY dept")
     List<Map<String, Object>> countByDepartment();
     
     /**
      * 按职称统计教师数量
      */
-    @Select("SELECT title, COUNT(*) as count FROM icps_teacher GROUP BY title")
+    @Select("SELECT title, COUNT(*) as count FROM icps_teacher WHERE deleted = 0 GROUP BY title")
     List<Map<String, Object>> countByTitle();
     
     /**
      * 分页查询教师列表
      */
-    @Select("SELECT * FROM icps_teacher WHERE 1=1")
+    @Select("SELECT * FROM icps_teacher WHERE deleted = 0")
     IPage<TeacherMp> selectPageByCondition(Page<TeacherMp> page, 
                                            @Param("name") String name, 
                                            @Param("dept") String dept,

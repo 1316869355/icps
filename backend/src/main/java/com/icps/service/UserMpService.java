@@ -27,11 +27,6 @@ public interface UserMpService extends IService<UserMp> {
     public Map<String, Object> getUserByUsername(String username);
     
     /**
-     * 用户登录验证
-     */
-    public Map<String, Object> login(String username, String password);
-    
-    /**
      * 更新用户信息
      */
     public Map<String, Object> updateUser(Long userId, Map<String, Object> userData);
@@ -54,9 +49,24 @@ public interface UserMpService extends IService<UserMp> {
     public Map<String, Object> getUserStatistics();
 
     /**
-     * 根据用户名和密码查询用户
+     * 根据用户名和密码查询用户（使用BCrypt校验）
      */
     boolean getUserByUsernameAndPassword(String username, String password);
+
+    /**
+     * 根据用户名查询用户实体（自动过滤逻辑删除）
+     */
+    UserMp getByUsername(String username);
+
+    /**
+     * 明文密码与BCrypt密文比对
+     */
+    boolean matchesPassword(String rawPassword, String encodedPassword);
+
+    /**
+     * 更新最后登录时间
+     */
+    void updateLastLogin(Long userId);
 
     /**
      * 转换单个用户实体为Map
