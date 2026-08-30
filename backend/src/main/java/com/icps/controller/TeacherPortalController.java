@@ -1,7 +1,9 @@
 package com.icps.controller;
 
+import com.icps.entity.CourseMp;
 import com.icps.entity.StudentCourseMp;
 import com.icps.entity.StudentMp;
+import com.icps.security.SecurityUtils;
 import com.icps.service.CourseMpService;
 import com.icps.service.StudentCourseMpService;
 import com.icps.service.StudentMpService;
@@ -141,6 +143,17 @@ public class TeacherPortalController {
                                                           @RequestBody(required = false) Map<String, Object> gradeData) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // 先做课程归属校验：课程不存在→404，归属不符→403
+            CourseMp course = courseMpService.getCourseEntityById(courseId);
+            if (course == null) {
+                response.put("success", false);
+                response.put("message", "课程不存在");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            if (!SecurityUtils.canAccessCourse(course)) {
+                return SecurityUtils.forbidden("无权为其他教师的课程录入成绩");
+            }
+
             StudentMp student = studentMpService.resolveStudent(studentId);
             if (student == null) {
                 response.put("success", false);
@@ -189,6 +202,16 @@ public class TeacherPortalController {
     public ResponseEntity<Map<String, Object>> getCourseStudents(@PathVariable Long courseId) {
         Map<String, Object> response = new HashMap<>();
         try {
+            CourseMp course = courseMpService.getCourseEntityById(courseId);
+            if (course == null) {
+                response.put("success", false);
+                response.put("message", "课程不存在");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            if (!SecurityUtils.canAccessCourse(course)) {
+                return SecurityUtils.forbidden("无权查看其他教师的课程学生名单");
+            }
+
             List<Map<String, Object>> students = studentCourseMpService.getCourseGradeDetails(courseId);
             response.put("success", true);
             response.put("data", students);

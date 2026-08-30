@@ -9,11 +9,19 @@ import com.icps.entity.CourseMp;
  * 课程服务 - MyBatisPlus版本
  */
 public interface CourseMpService {
-    
+
     /**
      * 获取所有课程列表
      */
     public List<Map<String, Object>> getAllCourses();
+
+    /**
+     * 按 courseId 加载课程实体（用于教师-课程归属校验）。
+     * 逻辑删除由 @TableLogic 自动过滤。
+     *
+     * @return 不存在或已逻辑删除时返回 null
+     */
+    public CourseMp getCourseEntityById(Long courseId);
     
     /**
      * 分页查询课程列表

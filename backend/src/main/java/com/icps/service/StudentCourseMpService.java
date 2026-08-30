@@ -61,6 +61,14 @@ public interface StudentCourseMpService {
     StudentCourseMp findByStuAndCourse(String stuCardNo, Long courseId);
 
     /**
+     * 按主键加载选课记录实体（用于成绩更新前的课程归属校验还原 courseId）。
+     * 逻辑删除由 @TableLogic 自动过滤。
+     *
+     * @return 不存在或已逻辑删除时返回 null
+     */
+    StudentCourseMp findById(Long id);
+
+    /**
      * 查询学生成绩明细（关联课程信息）
      */
     List<Map<String, Object>> getGradeDetails(String stuCardNo);

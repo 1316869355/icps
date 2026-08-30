@@ -317,6 +317,17 @@ public class StudentCourseMpServiceImpl implements StudentCourseMpService {
     }
 
     /**
+     * 按主键加载选课记录实体（供成绩更新前还原 courseId 做课程归属校验）
+     */
+    @Override
+    public StudentCourseMp findById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return studentCourseMpMapper.selectById(id);
+    }
+
+    /**
      * 查询学生成绩明细（关联课程信息）
      */
     @Override

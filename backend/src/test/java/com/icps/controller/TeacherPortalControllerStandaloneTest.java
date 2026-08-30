@@ -1,23 +1,28 @@
 package com.icps.controller;
 
+import com.icps.entity.CourseMp;
 import com.icps.entity.StudentCourseMp;
 import com.icps.entity.StudentMp;
+import com.icps.security.JwtTokenProvider;
 import com.icps.service.CourseMpService;
 import com.icps.service.StudentCourseMpService;
 import com.icps.service.StudentMpService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -56,6 +61,27 @@ class TeacherPortalControllerStandaloneTest {
         ReflectionTestUtils.setField(controller, "studentCourseMpService", studentCourseMpService);
         ReflectionTestUtils.setField(controller, "courseMpService", courseMpService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+
+        // 教师身份（userId=4），供 canAccessCourse 校验
+        JwtTokenProvider.JwtPrincipal principal =
+                new JwtTokenProvider.JwtPrincipal(4L, "teacher1", "teacher", System.currentTimeMillis() + 3600_000L);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList()));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
+    /**
+     * 桩：课程归属当前登录教师（userId=4）
+     */
+    private void stubOwnedCourse(Long courseId) {
+        CourseMp course = new CourseMp();
+        course.setCourseId(courseId);
+        course.setTeacherId(4L);
+        when(courseMpService.getCourseEntityById(courseId)).thenReturn(course);
     }
 
     @Test
@@ -139,6 +165,7 @@ class TeacherPortalControllerStandaloneTest {
 
     @Test
     void inputGradeReturns404WhenStudentMissing() throws Exception {
+        stubOwnedCourse(1L);
         when(studentMpService.resolveStudent("ghost")).thenReturn(null);
 
         mockMvc.perform(put("/teacher/students/ghost/courses/1/grade")
@@ -150,6 +177,7 @@ class TeacherPortalControllerStandaloneTest {
 
     @Test
     void inputGradeReturns404WhenCourseNotSelected() throws Exception {
+        stubOwnedCourse(9L);
         StudentMp student = new StudentMp();
         student.setStuCardNo("CARD001");
         when(studentMpService.resolveStudent("1011")).thenReturn(student);
@@ -164,6 +192,7 @@ class TeacherPortalControllerStandaloneTest {
 
     @Test
     void inputGradeReturns400WithoutAnyScore() throws Exception {
+        stubOwnedCourse(1L);
         StudentMp student = new StudentMp();
         student.setStuCardNo("CARD001");
         StudentCourseMp record = new StudentCourseMp();
@@ -181,6 +210,7 @@ class TeacherPortalControllerStandaloneTest {
 
     @Test
     void inputGradeComputesGradePointWhenAbsent() throws Exception {
+        stubOwnedCourse(1L);
         StudentMp student = new StudentMp();
         student.setStuCardNo("CARD001");
         StudentCourseMp record = new StudentCourseMp();
@@ -203,6 +233,7 @@ class TeacherPortalControllerStandaloneTest {
 
     @Test
     void courseStudentsReturnsRoster() throws Exception {
+        stubOwnedCourse(1L);
         Map<String, Object> row = new HashMap<>();
         row.put("sno", "2023001001");
         row.put("sname", "张三");
@@ -213,6 +244,44 @@ class TeacherPortalControllerStandaloneTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.total").value(1))
                 .andExpect(jsonPath("$.data[0].sno").value("2023001001"));
+    }
+
+    /**
+     * 教师 A（userId=4）查看教师 B（teacherId=7）课程的学生名单 → 403
+     */
+    @Test
+    void courseStudentsReturns403ForNonOwnerTeacher() throws Exception {
+        CourseMp othersCourse = new CourseMp();
+        othersCourse.setCourseId(3L);
+        othersCourse.setTeacherId(7L);
+        when(courseMpService.getCourseEntityById(3L)).thenReturn(othersCourse);
+
+        mockMvc.perform(get("/teacher/courses/3/students"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(403));
+        verify(studentCourseMpService, never()).getCourseGradeDetails(anyLong());
+    }
+
+    /**
+     * 教师 A 为教师 B 的课程录入成绩 → 403
+     */
+    @Test
+    void inputGradeReturns403ForNonOwnerCourse() throws Exception {
+        CourseMp othersCourse = new CourseMp();
+        othersCourse.setCourseId(3L);
+        othersCourse.setTeacherId(7L);
+        when(courseMpService.getCourseEntityById(3L)).thenReturn(othersCourse);
+
+        mockMvc.perform(put("/teacher/students/1011/courses/3/grade")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"grade\":90}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value(403));
+        verify(studentMpService, never()).resolveStudent(anyString());
+        verify(studentCourseMpService, never()).updateGrade(anyLong(),
+                org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
 
     @Test

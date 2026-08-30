@@ -38,6 +38,18 @@ public class CourseMpServiceImpl implements CourseMpService {
         List<CourseMp> courses = courseMpMapper.selectList(null);
         return convertCoursesToMap(courses);
     }
+
+    /**
+     * 按 courseId 加载课程实体（供教师-课程归属校验使用）。
+     * 走 MyBatis-Plus selectById，@TableLogic 自动过滤逻辑删除。
+     */
+    @Override
+    public CourseMp getCourseEntityById(Long courseId) {
+        if (courseId == null) {
+            return null;
+        }
+        return courseMpMapper.selectById(courseId);
+    }
     
     /**
      * 分页查询课程列表

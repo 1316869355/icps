@@ -1,7 +1,10 @@
 package com.icps.controller;
 
+import com.icps.entity.CourseMp;
+import com.icps.entity.StudentCourseMp;
 import com.icps.entity.StudentMp;
 import com.icps.security.SecurityUtils;
+import com.icps.service.CourseMpService;
 import com.icps.service.StudentCourseMpService;
 import com.icps.service.StudentMpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,9 @@ public class StudentCourseController {
 
     @Autowired
     private StudentMpService studentMpService;
+
+    @Autowired
+    private CourseMpService courseMpService;
 
     /**
      * 学生已选课程（含课程信息）
@@ -144,6 +150,11 @@ public class StudentCourseController {
     public ResponseEntity<Map<String, Object>> getCourseGrades(@PathVariable Long courseId) {
         Map<String, Object> response = new HashMap<>();
         try {
+            CourseTarget target = resolveCourse(courseId, "无权查看其他教师的课程成绩");
+            if (target.error != null) {
+                return target.error;
+            }
+
             List<Map<String, Object>> grades = studentCourseMpService.getCourseGradeDetails(courseId);
             response.put("success", true);
             response.put("data", grades);
@@ -170,10 +181,22 @@ public class StudentCourseController {
 
             Object idValue = gradeData.get("id");
             if (idValue != null) {
+                Long recordId = Long.parseLong(String.valueOf(idValue));
+                // 通过选课记录还原 courseId，再做课程归属校验
+                StudentCourseMp record = studentCourseMpService.findById(recordId);
+                if (record == null) {
+                    response.put("success", false);
+                    response.put("message", "选课记录不存在");
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+                CourseTarget target = resolveCourse(record.getCourseId(), "无权修改其他教师课程的成绩");
+                if (target.error != null) {
+                    return target.error;
+                }
+
                 Double grade = toDouble(gradeData.get("grade"));
                 Double gradePoint = toDouble(gradeData.get("gradePoint"));
-                Map<String, Object> result = studentCourseMpService.updateGrade(
-                        Long.parseLong(String.valueOf(idValue)), grade, gradePoint);
+                Map<String, Object> result = studentCourseMpService.updateGrade(recordId, grade, gradePoint);
                 return ResponseEntity.status(Boolean.TRUE.equals(result.get("success"))
                         ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(result);
             }
@@ -185,7 +208,13 @@ public class StudentCourseController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            Map<String, Object> result = studentCourseMpService.selectCourse(cardNo, Long.parseLong(String.valueOf(courseIdValue)));
+            Long courseId = Long.parseLong(String.valueOf(courseIdValue));
+            CourseTarget target = resolveCourse(courseId, "无权为其他教师的课程录入成绩");
+            if (target.error != null) {
+                return target.error;
+            }
+
+            Map<String, Object> result = studentCourseMpService.selectCourse(cardNo, courseId);
             if (!Boolean.TRUE.equals(result.get("success"))) {
                 return ResponseEntity.badRequest().body(result);
             }
@@ -210,6 +239,18 @@ public class StudentCourseController {
                                                            @RequestBody Map<String, Object> gradeData) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // 通过选课记录还原 courseId，再做课程归属校验
+            StudentCourseMp record = studentCourseMpService.findById(id);
+            if (record == null) {
+                response.put("success", false);
+                response.put("message", "选课记录不存在");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            CourseTarget target = resolveCourse(record.getCourseId(), "无权修改其他教师课程的成绩");
+            if (target.error != null) {
+                return target.error;
+            }
+
             Map<String, Object> result = studentCourseMpService.updateGrade(id,
                     toDouble(gradeData.get("grade")), toDouble(gradeData.get("gradePoint")));
             return ResponseEntity.status(Boolean.TRUE.equals(result.get("success"))
@@ -244,6 +285,22 @@ public class StudentCourseController {
     }
 
     /**
+     * 加载课程并做教师-课程归属校验：admin 直通；teacher 仅当课程归属本人。
+     *
+     * @return 校验通过时 {@code error == null}；课程不存在→404，归属不符→403
+     */
+    private CourseTarget resolveCourse(Long courseId, String deniedMessage) {
+        CourseMp course = courseMpService.getCourseEntityById(courseId);
+        if (course == null) {
+            return CourseTarget.error(SecurityUtils.notFound("课程不存在"));
+        }
+        if (!SecurityUtils.canAccessCourse(course)) {
+            return CourseTarget.error(SecurityUtils.forbidden(deniedMessage));
+        }
+        return CourseTarget.ok(course);
+    }
+
+    /**
      * 学生归属校验的结果载体
      */
     private static final class StudentTarget {
@@ -261,6 +318,27 @@ public class StudentCourseController {
 
         static StudentTarget error(ResponseEntity<Map<String, Object>> error) {
             return new StudentTarget(null, error);
+        }
+    }
+
+    /**
+     * 课程归属校验的结果载体
+     */
+    private static final class CourseTarget {
+        private final CourseMp course;
+        private final ResponseEntity<Map<String, Object>> error;
+
+        private CourseTarget(CourseMp course, ResponseEntity<Map<String, Object>> error) {
+            this.course = course;
+            this.error = error;
+        }
+
+        static CourseTarget ok(CourseMp course) {
+            return new CourseTarget(course, null);
+        }
+
+        static CourseTarget error(ResponseEntity<Map<String, Object>> error) {
+            return new CourseTarget(null, error);
         }
     }
 

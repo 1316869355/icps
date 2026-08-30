@@ -1,5 +1,6 @@
 package com.icps.security;
 
+import com.icps.entity.CourseMp;
 import com.icps.entity.StudentMp;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,6 +92,25 @@ public final class SecurityUtils {
         }
         Long currentUserId = currentUserId();
         return currentUserId != null && currentUserId.equals(student.getUserId());
+    }
+
+    /**
+     * 课程归属校验：admin 直通；teacher 仅当 course.teacherId 与当前登录教师 userId 一致时通过。
+     *
+     * <p>icps_course.teacher_id 对齐 icps_user.user_id（即 JWT principal.userId），
+     * 与 icps_teacher.user_id 同源，故直接比 currentUserId。</p>
+     *
+     * @param course 已加载的课程实体，null 时返回 false
+     */
+    public static boolean canAccessCourse(CourseMp course) {
+        if (isAdmin()) {
+            return true;
+        }
+        if (course == null || course.getTeacherId() == null) {
+            return false;
+        }
+        Long currentUserId = currentUserId();
+        return currentUserId != null && currentUserId.equals(course.getTeacherId());
     }
 
     /**
