@@ -7,6 +7,9 @@ const Dashboard = () => import('@/views/Dashboard.vue')
 const StudentInfo = () => import('@/views/student/Info.vue')
 const StudentGrades = () => import('@/views/student/Grades.vue')
 const StudentCourses = () => import('@/views/student/Courses.vue')
+const TeacherStudents = () => import('@/views/teacher/Students.vue')
+const TeacherSearch = () => import('@/views/teacher/Search.vue')
+const TeacherStatistics = () => import('@/views/teacher/Statistics.vue')
 
 const routes = [
   {
@@ -43,6 +46,25 @@ const routes = [
     name: 'StudentCourses',
     component: StudentCourses,
     meta: { requiresAuth: true, role: 'student' }
+  },
+  // 教师路由
+  {
+    path: '/teacher/students',
+    name: 'TeacherStudents',
+    component: TeacherStudents,
+    meta: { requiresAuth: true, roles: ['teacher', 'admin'] }
+  },
+  {
+    path: '/teacher/search',
+    name: 'TeacherSearch',
+    component: TeacherSearch,
+    meta: { requiresAuth: true, roles: ['teacher', 'admin'] }
+  },
+  {
+    path: '/teacher/statistics',
+    name: 'TeacherStatistics',
+    component: TeacherStatistics,
+    meta: { requiresAuth: true, roles: ['teacher', 'admin'] }
   }
 ]
 
@@ -61,8 +83,9 @@ router.beforeEach((to, from, next) => {
     return
   }
   
-  // 检查角色权限
-  if (to.meta.role && to.meta.role !== authStore.userRole) {
+  // 检查角色权限（meta.role 单角色，meta.roles 多角色，二者兼容）
+  const requiredRoles = to.meta.roles || (to.meta.role ? [to.meta.role] : null)
+  if (requiredRoles && !requiredRoles.includes(authStore.userRole)) {
     // 角色不匹配时统一回仪表盘（/student 不是已注册路由，直接跳转会失败）
     next('/dashboard')
     return

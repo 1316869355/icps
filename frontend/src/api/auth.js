@@ -32,18 +32,24 @@ export const studentApi = {
 
 // 教师相关API
 export const teacherApi = {
-  // 获取学生列表
+  // 学生列表（分页 + 姓名/学院/专业/性别筛选）
   getStudents: (params) => request.get('/teacher/students', { params }),
-  
-  // 搜索学生
-  searchStudents: (keyword) => request.get('/teacher/students/search', { 
-    params: { keyword } 
+
+  // 关键词搜索学生（学号 / 姓名 / 班级 / 专业）
+  searchStudents: (keyword, params = {}) => request.get('/teacher/students/search', {
+    params: { keyword, ...params }
   }),
-  
-  // 获取学生详情
+
+  // 学生详情（档案 + 课程成绩明细）
   getStudentDetail: (studentId) => request.get(`/teacher/students/${studentId}`),
-  
-  // 更新学生成绩
-  updateStudentGrade: (studentId, courseId, data) => 
-    request.put(`/teacher/students/${studentId}/courses/${courseId}/grade`, data)
+
+  // 录入 / 更新成绩
+  updateStudentGrade: (studentId, courseId, data) =>
+    request.put(`/teacher/students/${studentId}/courses/${courseId}/grade`, data),
+
+  // 课程学生名单（含成绩）
+  getCourseStudents: (courseId) => request.get(`/teacher/courses/${courseId}/students`),
+
+  // 综合统计（学生 / 课程 / 选课 / 成绩概览）
+  getStatistics: () => request.get('/teacher/statistics')
 }

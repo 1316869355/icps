@@ -58,7 +58,7 @@
                 <el-menu-item index="/student/courses">课程信息</el-menu-item>
               </el-sub-menu>
 
-              <el-sub-menu index="teacher" v-if="userRole === 'teacher'">
+              <el-sub-menu index="teacher" v-if="userRole === 'teacher' || userRole === 'admin'">
                 <template #title>
                   <el-icon><user-filled /></el-icon>
                   <span>教师功能</span>

@@ -377,7 +377,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 15px;
 
-  h4 {
+  :is(h4) {
     margin: 0;
     color: #333;
     font-size: 16px;
