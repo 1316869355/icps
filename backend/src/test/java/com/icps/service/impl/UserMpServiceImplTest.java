@@ -13,6 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -104,5 +106,89 @@ class UserMpServiceImplTest {
     void getUserByUsernameAndPasswordReturnsFalseForUnknownUser() {
         when(userMpMapper.selectByUsername("ghost")).thenReturn(null);
         assertFalse(userService.getUserByUsernameAndPassword("ghost", "123456"));
+    }
+
+    /**
+     * 关键回归：非学生用户被分配到学生 user_id 保留段（2023001011..2023001099）时，
+     * Service 必须回滚插入并返回失败，否则会与 icps_stu.user_id 撞车，经
+     * {@code SecurityUtils.canAccessStudent} 接管真实学生档案——水平越权。
+     *
+     * <p>背景：本会话测试中曾实际触发——新建 admin 被分配 user_id=2023001014，
+     * 撞上学生"赵六111"。</p>
+     */
+    @Test
+    void addUserRejectsNonStudentUserFallingIntoStudentReservedRange() {
+        UserMp candidate = new UserMp();
+        candidate.setUsername("hijacker");
+        candidate.setPassword("123456");
+        candidate.setRole("admin");
+
+        // 用户名不冲突
+        when(userMpMapper.selectByUsername("hijacker")).thenReturn(null);
+        // 模拟 AUTO_INCREMENT 把候选 user_id 分配到学生段（2023001014）
+        when(userMpMapper.insert(any(UserMp.class))).thenAnswer(invocation -> {
+            UserMp u = invocation.getArgument(0);
+            u.setUserId(2023001014L);
+            return 1;
+        });
+        // 学生段内 icps_stu.user_id=2023001014 已被占用
+        when(userMpMapper.countStudentsByUserIdIncludingDeleted(2023001014L)).thenReturn(1L);
+
+        Map<String, Object> result = userService.addUser(candidate);
+
+        assertFalse(Boolean.TRUE.equals(result.get("success")),
+                "非学生用户落入学生段必须被拒绝");
+        // 必须逻辑删除刚插入的用户，避免被越权利用
+        verify(userMpMapper).deleteById(2023001014L);
+    }
+
+    /**
+     * 学生用户被分配到学生段是允许的（学生创建流程），不应被拦截。
+     */
+    @Test
+    void addUserAllowsStudentUserFallingIntoStudentReservedRange() {
+        UserMp candidate = new UserMp();
+        candidate.setUsername("newstudent");
+        candidate.setPassword("123456");
+        candidate.setRole("student");
+
+        when(userMpMapper.selectByUsername("newstudent")).thenReturn(null);
+        when(userMpMapper.insert(any(UserMp.class))).thenAnswer(invocation -> {
+            UserMp u = invocation.getArgument(0);
+            u.setUserId(2023001015L);
+            return 1;
+        });
+
+        Map<String, Object> result = userService.addUser(candidate);
+
+        assertTrue(Boolean.TRUE.equals(result.get("success")),
+                "学生用户落入学生段是正常流程，不应被拦截");
+        // 不应回滚
+        verify(userMpMapper, never()).deleteById(any(Long.class));
+    }
+
+    /**
+     * 非学生用户被分配到学生段之外的值（且不撞任何 icps_stu.user_id）应正常通过。
+     */
+    @Test
+    void addUserAllowsNonStudentUserOutsideStudentRange() {
+        UserMp candidate = new UserMp();
+        candidate.setUsername("safeadmin");
+        candidate.setPassword("123456");
+        candidate.setRole("admin");
+
+        when(userMpMapper.selectByUsername("safeadmin")).thenReturn(null);
+        when(userMpMapper.insert(any(UserMp.class))).thenAnswer(invocation -> {
+            UserMp u = invocation.getArgument(0);
+            u.setUserId(2023002001L); // V99 迁移后的安全值
+            return 1;
+        });
+        when(userMpMapper.countStudentsByUserIdIncludingDeleted(2023002001L)).thenReturn(0L);
+
+        Map<String, Object> result = userService.addUser(candidate);
+
+        assertTrue(Boolean.TRUE.equals(result.get("success")),
+                "非学生用户落在安全段应正常创建");
+        verify(userMpMapper, never()).deleteById(any(Long.class));
     }
 }

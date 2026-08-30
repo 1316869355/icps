@@ -39,4 +39,15 @@ public interface UserMpMapper extends BaseMapper<UserMp> {
      */
     @Select("SELECT role, COUNT(*) as count FROM icps_user WHERE deleted = 0 GROUP BY role")
     List<Map<String, Object>> countByRole();
+
+    /**
+     * 查询某 user_id 是否已被任何（含逻辑删除的）icps_stu 记录占用。
+     *
+     * <p>用途：用户创建时防御水平越权——若新建非学生用户被分配到与现有学生档案
+     * 相同的 user_id，该用户可经 {@code SecurityUtils.canAccessStudent} 接管真实
+     * 学生档案（按 user_id 比对）。这里显式查询含 deleted 记录，避免逻辑删除后
+     * 历史学生档案被新用户接管。</p>
+     */
+    @Select("SELECT COUNT(*) FROM icps_stu WHERE user_id = #{userId}")
+    long countStudentsByUserIdIncludingDeleted(@Param("userId") Long userId);
 }

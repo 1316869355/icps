@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icps.entity.UserMp;
 import com.icps.mapper.UserMpMapper;
+import com.icps.security.SecurityUtils;
 import com.icps.service.UserMpService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,21 @@ import java.util.Map;
 @Service
 public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> implements UserMpService {
 
-    
+    /**
+     * 学生 user_id 保留段下界（含）。
+     *
+     * <p>当前学生档案 user_id 落在 2023001011..2023001020，后续新建学生将继续沿用
+     * 该段。任何「非学生创建流程」产生的新用户若被分配到该段的 user_id，
+     * 会与 {@code icps_stu.user_id} 撞车，经 {@code SecurityUtils.canAccessStudent}
+     * （按 user_id 比对）误判为本人而接管真实学生档案——水平越权。</p>
+     */
+    public static final long STUDENT_USERID_RESERVED_LOW = 2023001011L;
+
+    /**
+     * 学生 user_id 保留段上界（含）。给后续新建学生留出余量。
+     */
+    public static final long STUDENT_USERID_RESERVED_HIGH = 2023001099L;
+
     @Autowired
     private UserMpMapper userMpMapper;
     
@@ -156,6 +171,21 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
     
     /**
      * 添加用户
+     *
+     * <p>含 user_id 水平越权防御：</p>
+     * <ol>
+     *   <li>插入后读取 MyBatis-Plus 回填的 user_id；</li>
+     *   <li>若新用户 role != "student" 且 user_id 落入学生保留段
+     *       {@code 2023001011..2023001099}，立即逻辑删除该用户并拒绝——
+     *       否则会与 {@code icps_stu.user_id} 撞车，经
+     *       {@code SecurityUtils.canAccessStudent}（按 user_id 比对）误判为
+     *       本人而接管真实学生档案；</li>
+     *   <li>对所有非学生用户，额外断言其 user_id 不等于任何已存在
+     *       （含逻辑删除）的 {@code icps_stu.user_id}，防接管历史学生档案。</li>
+     * </ol>
+     * <p>正常情况下 V99 迁移已把 {@code icps_user.AUTO_INCREMENT} 调到
+     * 2023002001（避开学生段），auto 值不会落入学生段；本守护用于迁移未应用、
+     * 手动重置、或运维异常的场景。</p>
      */
     @Override
     public Map<String, Object> addUser(UserMp user) {
@@ -174,9 +204,33 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             }
             int result = userMpMapper.insert(user);
-            
+
             Map<String, Object> response = new HashMap<>();
             if (result > 0) {
+                Long newUserId = user.getUserId();
+                String role = user.getRole();
+
+                // 越权防御：非学生用户 user_id 不得落入学生保留段，且不得撞上已有 icps_stu.user_id
+                if (newUserId != null && !SecurityUtils.ROLE_STUDENT.equalsIgnoreCase(role)) {
+                    boolean inStudentRange =
+                            newUserId >= STUDENT_USERID_RESERVED_LOW
+                                    && newUserId <= STUDENT_USERID_RESERVED_HIGH;
+                    long collisionCount =
+                            userMpMapper.countStudentsByUserIdIncludingDeleted(newUserId);
+                    if (inStudentRange || collisionCount > 0) {
+                        // 回滚刚插入的用户，避免被越权利用
+                        userMpMapper.deleteById(newUserId);
+                        log.error("拒绝创建非学生用户：user_id={} 落入学生保留段或与 icps_stu 冲突"
+                                + "（inRange={}, stuCollision={}）。请检查 icps_user.AUTO_INCREMENT 是否"
+                                + " 已迁移到安全值（参见 V99 迁移）。",
+                                newUserId, inStudentRange, collisionCount);
+                        response.put("success", false);
+                        response.put("message", "用户创建失败：分配到的 user_id 与学生档案冲突，"
+                                + "请联系管理员检查 AUTO_INCREMENT 设置");
+                        return response;
+                    }
+                }
+
                 response.put("success", true);
                 response.put("message", "用户添加成功");
             } else {
