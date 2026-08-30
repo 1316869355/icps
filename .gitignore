@@ -35,6 +35,10 @@ Thumbs.db
 *.log
 logs/
 
+# Backend runtime logs
+backend/jar.err
+backend/jar.out
+
 # Dependency directories
 /frontend/node_modules/
 
