@@ -21,6 +21,13 @@ public class UserMp {
      */
     @TableId(value = "user_id", type = IdType.AUTO)
     private Long userId;
+
+    /**
+     * 逻辑删除标记 0:未删除 1:已删除
+     */
+    @TableLogic
+    @TableField("deleted")
+    private Integer deleted;
     
     /**
      * 用户名

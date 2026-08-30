@@ -21,6 +21,13 @@ public class TeacherMp {
      */
     @TableId(value = "user_id", type = IdType.ASSIGN_ID)
     private Long userId;
+
+    /**
+     * 逻辑删除标记 0:未删除 1:已删除
+     */
+    @TableLogic
+    @TableField("deleted")
+    private Integer deleted;
     
     /**
      * 身份证号

@@ -21,6 +21,13 @@ public class StudentCourseMp {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 逻辑删除标记 0:未删除 1:已删除
+     */
+    @TableLogic
+    @TableField("deleted")
+    private Integer deleted;
     
     /**
      * 学生身份证号

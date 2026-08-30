@@ -23,6 +23,13 @@ public class StudentMp {
     private Long userId;
 
     /**
+     * 逻辑删除标记 0:未删除 1:已删除
+     */
+    @TableLogic
+    @TableField("deleted")
+    private Integer deleted;
+
+    /**
      * 身份证号（主键）
      */
     @TableField(value = "stu_card_no")

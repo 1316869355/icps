@@ -21,7 +21,7 @@ public interface StudentMpMapper extends BaseMapper<StudentMp> {
     /**
      * 根据用户id查询
      */
-    @Select("SELECT * FROM icps_stu WHERE user_id = #{userId}")
+    @Select("SELECT * FROM icps_stu WHERE user_id = #{userId} AND deleted = 0")
     StudentMp selectByUserId(@Param("userId") Long userId);
     
     /**

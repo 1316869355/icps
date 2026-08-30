@@ -19,19 +19,19 @@ public interface UserMpMapper extends BaseMapper<UserMp> {
     /**
      * 根据用户名查找用户
      */
-    @Select("SELECT * FROM icps_user WHERE username = #{username}")
+    @Select("SELECT * FROM icps_user WHERE username = #{username} AND deleted = 0")
     UserMp selectByUsername(@Param("username") String username);
     
     /**
      * 根据角色查询用户
      */
-    @Select("SELECT * FROM icps_user WHERE role = #{role}")
+    @Select("SELECT * FROM icps_user WHERE role = #{role} AND deleted = 0")
     List<UserMp> selectByRole(@Param("role") String role);
 
     /**
      * 验证用户登录
      */
-    @Select("SELECT COUNT(*) > 0 FROM icps_user WHERE username = #{username} AND password = #{password}")
+    @Select("SELECT COUNT(*) > 0 FROM icps_user WHERE username = #{username} AND password = #{password} AND deleted = 0")
     boolean validateLogin(@Param("username") String username, @Param("password") String password);
     
     /**

@@ -7,6 +7,7 @@ import com.icps.service.UserMpService;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,9 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
     @Autowired
     private UserMpMapper userMpMapper;
     
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
     /**
      * 获取所有用户列表
      */
@@ -42,7 +46,7 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
     public boolean getUserByUsernameAndPassword(String username, String password) {
         UserMp user = userMpMapper.selectByUsername(username);
         if (user != null) {
-            return user.getPassword().equals(password);
+            return passwordEncoder.matches(password, user.getPassword());
         }
         return false;
     }
@@ -113,8 +117,8 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
             if (userData.containsKey("username")) {
                 user.setUsername((String) userData.get("username"));
             }
-            if (userData.containsKey("password")) {
-                user.setPassword((String) userData.get("password"));
+            if (userData.containsKey("password") && userData.get("password") != null) {
+                user.setPassword(passwordEncoder.encode((String) userData.get("password")));
             }
             if (userData.containsKey("role")) {
                 user.setRole((String) userData.get("role"));
@@ -157,6 +161,10 @@ public class UserMpServiceImpl extends ServiceImpl<UserMpMapper, UserMp> impleme
                 return response;
             }
             
+            // 密码加密存储
+            if (user.getPassword() != null) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
             int result = userMpMapper.insert(user);
             
             Map<String, Object> response = new HashMap<>();

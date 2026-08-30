@@ -3,7 +3,6 @@ package com.icps.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.icps.entity.StudentMp;
 import com.icps.entity.TeacherMp;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -22,7 +21,7 @@ public interface TeacherMpMapper extends BaseMapper<TeacherMp> {
     /**
      * 根据用户id查询
      */
-    @Select("SELECT * FROM icps_teacher WHERE user_id = #{userId}")
+    @Select("SELECT * FROM icps_teacher WHERE user_id = #{userId} AND deleted = 0")
     TeacherMp selectByUserId(@Param("userId") Long userId);
 
     /**
