@@ -25,12 +25,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    // 使用 Vite 内置的 esbuild 压缩，无需额外安装 terser
+    minify: 'esbuild'
   }
 })

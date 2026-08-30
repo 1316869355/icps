@@ -39,6 +39,7 @@
           >
             <el-option label="学生" value="student" />
             <el-option label="教师" value="teacher" />
+            <el-option label="管理员" value="admin" />
           </el-select>
         </el-form-item>
         

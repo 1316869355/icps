@@ -63,12 +63,8 @@ router.beforeEach((to, from, next) => {
   
   // 检查角色权限
   if (to.meta.role && to.meta.role !== authStore.userRole) {
-    // 根据当前用户角色重定向到对应的页面
-    if (authStore.userRole === 'student') {
-      next('/student')
-    } else {
-      next('/login')
-    }
+    // 角色不匹配时统一回仪表盘（/student 不是已注册路由，直接跳转会失败）
+    next('/dashboard')
     return
   }
   

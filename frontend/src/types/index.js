@@ -3,7 +3,8 @@
 // 角色常量
 export const UserRole = {
   STUDENT: 'student',
-  TEACHER: 'teacher'
+  TEACHER: 'teacher',
+  ADMIN: 'admin'
 }
 
 // 用户信息数据结构

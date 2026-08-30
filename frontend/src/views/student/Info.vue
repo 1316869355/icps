@@ -1,6 +1,6 @@
 <template>
   <div class="student-info">
-    <el-card class="info-card">
+    <el-card class="info-card" v-loading="loading">
       <template #header>
         <div class="card-header">
           <span>个人信息</span>
@@ -8,7 +8,7 @@
             编辑信息
           </el-button>
           <el-button-group v-else>
-            <el-button type="success" @click="handleSave">保存</el-button>
+            <el-button type="success" @click="handleSave" :loading="saving">保存</el-button>
             <el-button @click="handleCancel">取消</el-button>
           </el-button-group>
         </div>
@@ -18,7 +18,7 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="学号" prop="studentId">
-              <el-input v-model="formData.studentId" :disabled="!isEditing" />
+              <el-input v-model="formData.studentId" disabled />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -39,38 +39,69 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="年龄" prop="age">
-              <el-input-number v-model="formData.age" :disabled="!isEditing" :min="16" :max="30" />
+              <el-input-number v-model="formData.age" :disabled="!isEditing" :min="16" :max="60" />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
           <el-col :span="12">
+            <el-form-item label="学院" prop="department">
+              <el-input v-model="formData.department" :disabled="!isEditing" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="专业" prop="major">
               <el-input v-model="formData.major" :disabled="!isEditing" />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="班级" prop="className">
-              <el-input v-model="formData.className" :disabled="!isEditing" />
+            <el-form-item label="班级" prop="clazz">
+              <el-input v-model="formData.clazz" :disabled="!isEditing" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="地区" prop="region">
+              <el-input v-model="formData.region" :disabled="!isEditing" />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-form-item label="联系方式" prop="phone">
-          <el-input v-model="formData.phone" :disabled="!isEditing" />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="兴趣爱好" prop="hobby">
+              <el-input v-model="formData.hobby" :disabled="!isEditing" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="血型" prop="bloodType">
+              <el-input v-model="formData.bloodType" :disabled="!isEditing" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="formData.email" :disabled="!isEditing" />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="星座" prop="zodiac">
+              <el-input v-model="formData.zodiac" :disabled="!isEditing" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="评估结果" prop="evaluation">
+              <el-input v-model="formData.evaluation" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <el-form-item label="地址" prop="address">
-          <el-input 
-            v-model="formData.address" 
-            type="textarea" 
+          <el-input
+            v-model="formData.address"
+            type="textarea"
             :rows="3"
-            :disabled="!isEditing" 
+            :disabled="!isEditing"
           />
         </el-form-item>
       </el-form>
@@ -79,32 +110,82 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAuthStore } from '@/stores/auth'
+import { studentApi } from '@/api/auth'
+
+const authStore = useAuthStore()
 
 const formRef = ref()
 const isEditing = ref(false)
+const loading = ref(false)
+const saving = ref(false)
 const originalData = ref({})
 
 const formData = reactive({
-  studentId: '2023001001',
-  name: '张三',
+  studentId: '',
+  name: '',
   gender: '男',
-  age: 20,
-  major: '计算机科学与技术',
-  className: '计算机2001班',
-  phone: '13800138000',
-  email: 'zhangsan@example.com',
-  address: '北京市海淀区中关村大街1号'
+  age: null,
+  department: '',
+  major: '',
+  clazz: '',
+  region: '',
+  hobby: '',
+  bloodType: '',
+  zodiac: '',
+  evaluation: '',
+  address: ''
 })
 
 const formRules = {
-  studentId: [{ required: true, message: '请输入学号', trigger: 'blur' }],
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
   gender: [{ required: true, message: '请选择性别', trigger: 'change' }],
-  age: [{ required: true, message: '请输入年龄', trigger: 'blur' }],
-  major: [{ required: true, message: '请输入专业', trigger: 'blur' }],
-  phone: [{ required: true, message: '请输入联系方式', trigger: 'blur' }]
+  major: [{ required: true, message: '请输入专业', trigger: 'blur' }]
+}
+
+// 当前登录用户的 userId（登录时后端返回）
+const studentKey = computed(() => {
+  const info = authStore.userInfo
+  if (!info) return null
+  return info.userId ?? info.studentId ?? null
+})
+
+const loadStudent = async () => {
+  if (!studentKey.value) {
+    ElMessage.warning('未获取到用户信息，请重新登录')
+    return
+  }
+  loading.value = true
+  try {
+    const { data } = await studentApi.getStudentInfo(studentKey.value)
+    if (!data?.success) {
+      ElMessage.error(data?.message || '获取学生信息失败')
+      return
+    }
+    const student = data.data || {}
+    Object.assign(formData, {
+      studentId: student.studentId || '',
+      name: student.name || '',
+      gender: student.gender || '男',
+      age: student.age ?? null,
+      department: student.department || '',
+      major: student.major || '',
+      clazz: student.clazz || '',
+      region: student.region || '',
+      hobby: student.hobby || '',
+      bloodType: student.bloodType || '',
+      zodiac: student.zodiac || '',
+      evaluation: student.evaluation || '',
+      address: student.address || ''
+    })
+    originalData.value = { ...formData }
+  } catch (error) {
+    ElMessage.error('获取学生信息失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleEdit = () => {
@@ -115,12 +196,49 @@ const handleEdit = () => {
 const handleSave = async () => {
   try {
     await formRef.value.validate()
-    
-    // 模拟保存操作
-    ElMessage.success('信息保存成功')
-    isEditing.value = false
   } catch (error) {
     ElMessage.error('请完善表单信息')
+    return
+  }
+
+  saving.value = true
+  try {
+    // 前端驼峰字段 -> 后端实体字段
+    const payload = {
+      sname: formData.name,
+      ssex: formData.gender === '男' ? 1 : 2,
+      sage: formData.age,
+      stuDept: formData.department,
+      stuMajor: formData.major,
+      stuClazz: formData.clazz,
+      region: formData.region,
+      shbt: formData.hobby,
+      bloodType: formData.bloodType,
+      zodiac: formData.zodiac,
+      evaluation: formData.evaluation,
+      stuAddress: formData.address
+    }
+
+    const { data } = await studentApi.updateStudentInfo(studentKey.value, payload)
+    if (data?.success) {
+      ElMessage.success('信息保存成功')
+      isEditing.value = false
+      authStore.updateUserInfo({
+        name: formData.name,
+        gender: formData.gender,
+        age: formData.age,
+        department: formData.department,
+        major: formData.major,
+        clazz: formData.clazz,
+        address: formData.address
+      })
+    } else {
+      ElMessage.error(data?.message || '保存失败')
+    }
+  } catch (error) {
+    ElMessage.error('保存失败，请稍后重试')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -130,8 +248,7 @@ const handleCancel = () => {
 }
 
 onMounted(() => {
-  // 模拟从后端获取数据
-  console.log('加载学生信息')
+  loadStudent()
 })
 </script>
 
