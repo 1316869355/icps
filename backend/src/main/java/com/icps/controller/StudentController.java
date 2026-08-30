@@ -1,6 +1,7 @@
 package com.icps.controller;
 
 import com.icps.entity.StudentMp;
+import com.icps.security.SecurityUtils;
 import com.icps.service.StudentMpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,24 +47,26 @@ public class StudentController {
     }
     
     /**
-     * 学生详情：支持用户ID、学号、身份证号
+     * 学生详情：支持用户ID、学号、身份证号。
+     *
+     * <p>教师与管理员可查看任意学生；学生仅可查看本人档案，越权返回 403。</p>
      */
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getStudentById(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Map<String, Object> studentResult = studentService.getStudentById(id);
-            
-            if (Boolean.TRUE.equals(studentResult.get("success"))) {
-                response.put("success", true);
-                response.put("data", studentResult.get("student"));
-                return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", studentResult.get("message"));
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            StudentMp target = studentService.resolveStudent(id);
+            if (target == null) {
+                return SecurityUtils.notFound("学生不存在");
             }
+            if (!SecurityUtils.canAccessStudent(target)) {
+                return SecurityUtils.forbidden("无权访问其他学生的档案");
+            }
+
+            response.put("success", true);
+            response.put("data", studentService.convertStudentToMap(target));
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "获取学生信息失败");
@@ -110,6 +113,13 @@ public class StudentController {
         }
     }
     
+    /**
+     * 更新学生信息。
+     *
+     * <p>教师与管理员可修改任意学生的全部字段；学生只能修改本人档案，
+     * 且仅 {@code stuAddress / shbt / sblood / start_sign / region} 五个字段生效，
+     * 越权返回 403。</p>
+     */
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateStudent(
             @PathVariable String id, @RequestBody Map<String, Object> studentData) {
@@ -117,7 +127,19 @@ public class StudentController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Map<String, Object> updateResult = studentService.updateStudent(id, studentData);
+            StudentMp target = studentService.resolveStudent(id);
+            if (target == null) {
+                return SecurityUtils.notFound("学生不存在");
+            }
+            if (!SecurityUtils.canAccessStudent(target)) {
+                return SecurityUtils.forbidden("无权修改其他学生的档案");
+            }
+
+            Map<String, Object> payload = SecurityUtils.isStudent()
+                    ? SecurityUtils.filterStudentSelfUpdate(studentData)
+                    : studentData;
+
+            Map<String, Object> updateResult = studentService.updateStudent(id, payload);
             
             if (Boolean.TRUE.equals(updateResult.get("success"))) {
                 response.put("success", true);

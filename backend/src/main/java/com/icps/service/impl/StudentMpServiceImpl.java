@@ -243,9 +243,27 @@ public class StudentMpServiceImpl extends ServiceImpl<StudentMpMapper, StudentMp
     }
     
     /**
+     * 按关键词模糊搜索学生（学号 / 姓名 / 班级 / 专业，四者 OR）
+     */
+    @Override
+    public List<Map<String, Object>> searchStudentsByKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        String kw = keyword.trim();
+        LambdaQueryWrapper<StudentMp> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w -> w.like(StudentMp::getSno, kw)
+                .or().like(StudentMp::getSname, kw)
+                .or().like(StudentMp::getStuClazz, kw)
+                .or().like(StudentMp::getStuMajor, kw));
+        return convertStudentsToMap(studentMpMapper.selectList(wrapper));
+    }
+
+    /**
      * 解析学生标识：纯数字按 user_id 解析，否则依次按学号、身份证号解析
      */
-    private StudentMp resolveStudent(String studentId) {
+    @Override
+    public StudentMp resolveStudent(String studentId) {
         if (studentId == null || studentId.trim().isEmpty()) {
             return null;
         }

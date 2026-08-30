@@ -57,6 +57,16 @@ public interface StudentMpService extends IService<StudentMp> {
     Map<String, Object> convertStudentToMap(StudentMp student);
 
     /**
+     * 解析学生标识：纯数字按 user_id 解析，否则依次按学号、身份证号解析（自动过滤逻辑删除）
+     */
+    StudentMp resolveStudent(String studentId);
+
+    /**
+     * 按关键词模糊搜索学生（学号 / 姓名 / 班级 / 专业，四者 OR）
+     */
+    List<Map<String, Object>> searchStudentsByKeyword(String keyword);
+
+    /**
      * 根据用户ID查询学生（自动过滤逻辑删除）
      */
     StudentMp getByUserId(Long userId);

@@ -1,6 +1,7 @@
 package com.icps.controller;
 
 import com.icps.entity.StudentMp;
+import com.icps.security.SecurityUtils;
 import com.icps.service.StudentCourseMpService;
 import com.icps.service.StudentMpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +38,13 @@ public class StudentCourseController {
                                                                  @RequestParam(required = false) String academicYear) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String cardNo = resolveCardNo(studentId);
-            if (cardNo == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            StudentTarget target = resolveTarget(studentId, "无权查看其他学生的课程");
+            if (target.error != null) {
+                return target.error;
             }
 
-            List<Map<String, Object>> courses = studentCourseMpService.getGradeDetails(cardNo);
+            List<Map<String, Object>> courses =
+                    studentCourseMpService.getGradeDetails(target.student.getStuCardNo());
             courses = filter(courses, semester, academicYear);
 
             response.put("success", true);
@@ -68,14 +68,13 @@ public class StudentCourseController {
                                                                 @RequestParam(required = false) String academicYear) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String cardNo = resolveCardNo(studentId);
-            if (cardNo == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            StudentTarget target = resolveTarget(studentId, "无权查看其他学生的成绩");
+            if (target.error != null) {
+                return target.error;
             }
 
-            List<Map<String, Object>> grades = studentCourseMpService.getGradeDetails(cardNo);
+            List<Map<String, Object>> grades =
+                    studentCourseMpService.getGradeDetails(target.student.getStuCardNo());
             grades = filter(grades, semester, academicYear);
 
             response.put("success", true);
@@ -98,14 +97,13 @@ public class StudentCourseController {
                                                             @PathVariable Long courseId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String cardNo = resolveCardNo(studentId);
-            if (cardNo == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            StudentTarget target = resolveTarget(studentId, "无权替其他学生选课");
+            if (target.error != null) {
+                return target.error;
             }
 
-            Map<String, Object> result = studentCourseMpService.selectCourse(cardNo, courseId);
+            Map<String, Object> result =
+                    studentCourseMpService.selectCourse(target.student.getStuCardNo(), courseId);
             return ResponseEntity.status(Boolean.TRUE.equals(result.get("success"))
                     ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(result);
         } catch (Exception e) {
@@ -123,14 +121,13 @@ public class StudentCourseController {
                                                           @PathVariable Long courseId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String cardNo = resolveCardNo(studentId);
-            if (cardNo == null) {
-                response.put("success", false);
-                response.put("message", "学生不存在");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            StudentTarget target = resolveTarget(studentId, "无权替其他学生退课");
+            if (target.error != null) {
+                return target.error;
             }
 
-            Map<String, Object> result = studentCourseMpService.dropCourse(cardNo, courseId);
+            Map<String, Object> result =
+                    studentCourseMpService.dropCourse(target.student.getStuCardNo(), courseId);
             return ResponseEntity.status(Boolean.TRUE.equals(result.get("success"))
                     ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(result);
         } catch (Exception e) {
@@ -225,20 +222,46 @@ public class StudentCourseController {
     }
 
     private String resolveCardNo(String studentId) {
-        if (studentId == null || studentId.trim().isEmpty()) {
-            return null;
-        }
-        StudentMp student = null;
-        if (studentId.matches("\\d+")) {
-            student = studentMpService.getByUserId(Long.parseLong(studentId));
-        }
-        if (student == null) {
-            student = studentMpService.getBySno(studentId);
-        }
-        if (student == null) {
-            student = studentMpService.getByCardNo(studentId);
-        }
+        StudentMp student = studentMpService.resolveStudent(studentId);
         return student == null ? null : student.getStuCardNo();
+    }
+
+    /**
+     * 解析学生标识并做数据归属校验：教师与管理员可操作任意学生，学生仅可操作本人。
+     *
+     * @return 校验通过时 {@code error == null} 且 {@code student != null}；
+     *         校验失败时 {@code error} 为可直接返回的 404 / 403 响应
+     */
+    private StudentTarget resolveTarget(String studentId, String deniedMessage) {
+        StudentMp student = studentMpService.resolveStudent(studentId);
+        if (student == null) {
+            return StudentTarget.error(SecurityUtils.notFound("学生不存在"));
+        }
+        if (!SecurityUtils.canAccessStudent(student)) {
+            return StudentTarget.error(SecurityUtils.forbidden(deniedMessage));
+        }
+        return StudentTarget.ok(student);
+    }
+
+    /**
+     * 学生归属校验的结果载体
+     */
+    private static final class StudentTarget {
+        private final StudentMp student;
+        private final ResponseEntity<Map<String, Object>> error;
+
+        private StudentTarget(StudentMp student, ResponseEntity<Map<String, Object>> error) {
+            this.student = student;
+            this.error = error;
+        }
+
+        static StudentTarget ok(StudentMp student) {
+            return new StudentTarget(student, null);
+        }
+
+        static StudentTarget error(ResponseEntity<Map<String, Object>> error) {
+            return new StudentTarget(null, error);
+        }
     }
 
     private List<Map<String, Object>> filter(List<Map<String, Object>> rows, String semester, String academicYear) {

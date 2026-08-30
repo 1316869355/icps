@@ -56,6 +56,11 @@ public interface StudentCourseMpService {
     Map<String, Object> dropCourse(String stuCardNo, Long courseId);
 
     /**
+     * 按学生身份证号 + 课程ID 定位选课记录（自动过滤逻辑删除）
+     */
+    StudentCourseMp findByStuAndCourse(String stuCardNo, Long courseId);
+
+    /**
      * 查询学生成绩明细（关联课程信息）
      */
     List<Map<String, Object>> getGradeDetails(String stuCardNo);
@@ -64,4 +69,9 @@ public interface StudentCourseMpService {
      * 查询某门课程的成绩明细（关联学生信息）
      */
     List<Map<String, Object>> getCourseGradeDetails(Long courseId);
+
+    /**
+     * 全局成绩概览（选课总人次 / 已录入人次 / 平均分 / 平均绩点）
+     */
+    Map<String, Object> getGradeOverview();
 }

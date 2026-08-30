@@ -306,11 +306,31 @@ public class StudentCourseMpServiceImpl implements StudentCourseMpService {
     }
 
     /**
+     * 按学生身份证号 + 课程ID 定位选课记录
+     */
+    @Override
+    public StudentCourseMp findByStuAndCourse(String stuCardNo, Long courseId) {
+        if (stuCardNo == null || courseId == null) {
+            return null;
+        }
+        return studentCourseMpMapper.selectByStuAndCourse(stuCardNo, courseId);
+    }
+
+    /**
      * 查询学生成绩明细（关联课程信息）
      */
     @Override
     public List<Map<String, Object>> getGradeDetails(String stuCardNo) {
         return convertGradeDetails(studentCourseMpMapper.selectGradeDetailsByStuCardNo(stuCardNo));
+    }
+
+    /**
+     * 全局成绩概览
+     */
+    @Override
+    public Map<String, Object> getGradeOverview() {
+        Map<String, Object> overview = studentCourseMpMapper.selectGradeOverview();
+        return overview == null ? new HashMap<>() : overview;
     }
 
     /**

@@ -72,6 +72,14 @@ public interface StudentCourseMpMapper extends BaseMapper<StudentCourseMp> {
     List<Map<String, Object>> getStudentGradeStats();
 
     /**
+     * 全局成绩概览：选课总人次、已录入成绩人次、平均分、平均绩点
+     */
+    @Select("SELECT COUNT(*) AS record_count, COUNT(grade) AS graded_count, " +
+            "AVG(grade) AS avg_grade, AVG(grade_point) AS avg_grade_point " +
+            "FROM icps_student_course WHERE deleted = 0")
+    Map<String, Object> selectGradeOverview();
+
+    /**
      * 查询学生成绩明细（关联课程信息）
      */
     @Select("SELECT sc.id, sc.course_id, sc.grade, sc.grade_point, sc.academic_year, sc.semester, sc.status, " +
