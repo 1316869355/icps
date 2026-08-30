@@ -23,7 +23,8 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="姓名" prop="name">
-              <el-input v-model="formData.name" :disabled="!isEditing" />
+              <el-input v-model="formData.name" :disabled="isFieldLocked('name')" />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -31,15 +32,17 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="性别" prop="gender">
-              <el-radio-group v-model="formData.gender" :disabled="!isEditing">
+              <el-radio-group v-model="formData.gender" :disabled="isFieldLocked('gender')">
                 <el-radio label="男">男</el-radio>
                 <el-radio label="女">女</el-radio>
               </el-radio-group>
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="年龄" prop="age">
-              <el-input-number v-model="formData.age" :disabled="!isEditing" :min="16" :max="60" />
+              <el-input-number v-model="formData.age" :disabled="isFieldLocked('age')" :min="16" :max="60" />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -47,12 +50,14 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="学院" prop="department">
-              <el-input v-model="formData.department" :disabled="!isEditing" />
+              <el-input v-model="formData.department" :disabled="isFieldLocked('department')" />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="专业" prop="major">
-              <el-input v-model="formData.major" :disabled="!isEditing" />
+              <el-input v-model="formData.major" :disabled="isFieldLocked('major')" />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -60,7 +65,8 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="班级" prop="clazz">
-              <el-input v-model="formData.clazz" :disabled="!isEditing" />
+              <el-input v-model="formData.clazz" :disabled="isFieldLocked('clazz')" />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -92,6 +98,7 @@
           <el-col :span="12">
             <el-form-item label="评估结果" prop="evaluation">
               <el-input v-model="formData.evaluation" disabled />
+              <div v-if="isStudent && isEditing" class="lock-tip">仅管理员可修改</div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -151,6 +158,20 @@ const studentKey = computed(() => {
   if (!info) return null
   return info.userId ?? info.studentId ?? null
 })
+
+// 当前登录角色是否为学生
+const isStudent = computed(() => authStore.userRole === 'student')
+
+// 学生在编辑态下被锁定的字段（后端白名单只允许学生修改 5 个字段，
+// 其余 7 个字段后端会静默丢弃，前端须禁用编辑以避免误导）
+const STUDENT_LOCKED_FIELDS = ['name', 'gender', 'age', 'department', 'major', 'clazz', 'evaluation']
+
+// 字段是否被锁定：学生角色 + 编辑态时，锁定白名单外的字段
+const isFieldLocked = (field) => {
+  if (!isEditing.value) return true
+  if (isStudent.value && STUDENT_LOCKED_FIELDS.includes(field)) return true
+  return false
+}
 
 const loadStudent = async () => {
   if (!studentKey.value) {
@@ -278,5 +299,12 @@ onMounted(() => {
 
 :deep(.el-textarea) {
   width: 100%;
+}
+
+.lock-tip {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.4;
+  margin-top: 4px;
 }
 </style>
