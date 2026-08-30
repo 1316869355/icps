@@ -74,3 +74,7 @@ jspm_packages/
 
 # Maven wrapper
 .mvn/
+
+# ai files
+.codebuddy/
+docs/
